@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>domino-history</artifactId>
+        <groupId>org.dominokit</groupId>
+        <version>1.0-rc.4-SNAPSHOT</version>
+    </parent>
+    <packaging>gwt-lib</packaging>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>domino-history-shared</artifactId>
+
+    <name>domino-history-shared</name>
+    <url>https://github.com/DominoKit/domino-history</url>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>net.ltgt.gwt.maven</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <moduleName>org.dominokit.domino.history.History</moduleName>
+                    <moduleShortName>dominohistory</moduleShortName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
