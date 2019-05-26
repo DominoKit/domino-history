@@ -1,10 +1,10 @@
 package org.dominokit.domino.gwt.history;
 
-import com.google.gwt.core.client.Scheduler;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.PopStateEvent;
 import jsinterop.base.Js;
 import org.dominokit.domino.history.*;
+import org.gwtproject.core.client.Scheduler;
 
 import java.util.*;
 
