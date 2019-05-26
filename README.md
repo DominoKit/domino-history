@@ -1,3 +1,5 @@
+![GWT3/J2CL compatible](https://img.shields.io/badge/GWT3/J2CL-compatible-brightgreen.svg)
+
 # domino-history
 A wrapper for browser history state API
 
