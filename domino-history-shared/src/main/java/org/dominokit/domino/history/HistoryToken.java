@@ -83,6 +83,8 @@ public interface HistoryToken {
 
     String value();
 
+    boolean hasVariables();
+
     class TokenCannotBeNullException extends RuntimeException {
     }
 }

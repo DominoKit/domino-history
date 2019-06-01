@@ -361,6 +361,11 @@ public class StateHistoryToken implements HistoryToken {
         return path() + appendQuery(query()) + appendFragment();
     }
 
+    @Override
+    public boolean hasVariables() {
+        String tokenValue = value();
+        return tokenValue.contains(":") || tokenValue.contains("{") || tokenValue.contains("]");
+    }
 
     private String appendFragment() {
         return isEmpty(fragment()) ? "" : "#" + fragment();
