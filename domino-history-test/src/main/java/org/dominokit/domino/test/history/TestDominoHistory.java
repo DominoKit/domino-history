@@ -33,6 +33,11 @@ public class TestDominoHistory implements AppHistory {
         return new DominoDirectState(tokenFilter, currentState(), listener);
     }
 
+    @Override
+    public void removeListener(StateListener listener) {
+        listeners.remove(listener);
+    }
+
     private State currentState() {
         if (forwards.isEmpty())
             return new TestState(nullState());

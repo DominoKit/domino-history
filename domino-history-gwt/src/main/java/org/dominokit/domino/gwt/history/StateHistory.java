@@ -85,6 +85,11 @@ public class StateHistory implements AppHistory {
     }
 
     @Override
+    public void removeListener(StateListener listener) {
+        listeners.remove(listener);
+    }
+
+    @Override
     public void back() {
         history.back();
     }

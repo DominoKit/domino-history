@@ -4,6 +4,8 @@ public interface DominoHistory {
 
     DirectState listen(StateListener listener);
 
+    void removeListener(StateListener listener);
+
     DirectState listen(TokenFilter tokenFilter, StateListener listener);
 
     DirectState listen(StateListener listener, boolean removeOnComplete);
