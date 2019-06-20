@@ -324,7 +324,7 @@ public interface TokenFilter {
 
         @Override
         public boolean filter(HistoryToken token) {
-            return token.path().startsWith(path);
+            return token.startsWithPath(path);
         }
 
         @Override
