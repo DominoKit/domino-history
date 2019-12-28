@@ -24,8 +24,11 @@ A wrapper for browser history state API
 `StateHistory history = new StateHistory()`
 
 2- Use `pushState(String token)` to change the window url without firing the events.
+
 3- Use `fireState(String token)` to change the window url and fire the events.
+
 4- Use `listen` with all it variants to start listing for url changes.
+
 5- Use `currentToken` to get the current active token in the browser window url.
 
 #### Sample
