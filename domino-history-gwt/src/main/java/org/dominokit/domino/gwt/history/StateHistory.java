@@ -31,22 +31,22 @@ public class StateHistory implements AppHistory {
     private void inform(String token, String title, String stateJson) {
         final List<HistoryListener> completedListeners = new ArrayList<>();
         listeners.stream()
-                .filter(l -> {
-                    NormalizedToken normalized = getNormalizedToken(token, l);
+                .filter(listener -> {
+                    NormalizedToken normalized = getNormalizedToken(token, listener);
                     if (isNull(normalized)) {
                         normalized = new DefaultNormalizedToken(token);
                     }
-                    return l.getTokenFilter().filter(new DominoHistoryState(normalized.getToken().value(), title, stateJson).token);
+                    return listener.getTokenFilter().filter(new DominoHistoryState(normalized.getToken().value(), title, stateJson).token);
                 })
-                .forEach(l -> {
-                    if (l.isRemoveOnComplete()) {
-                        completedListeners.add(l);
+                .forEach(listener -> {
+                    if (listener.isRemoveOnComplete()) {
+                        completedListeners.add(listener);
                     }
 
                     Scheduler.get()
                             .scheduleDeferred(() -> {
-                                NormalizedToken normalized = getNormalizedToken(token, l);
-                                l.getListener().onPopState(new DominoHistoryState(normalized, token, title, stateJson));
+                                NormalizedToken normalized = getNormalizedToken(token, listener);
+                                listener.getListener().onPopState(new DominoHistoryState(normalized, token, title, stateJson));
                             });
                 });
 
