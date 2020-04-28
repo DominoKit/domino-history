@@ -1,5 +1,8 @@
 package org.dominokit.domino.gwt.history;
 
+import elemental2.core.JsMap;
+import elemental2.dom.CustomEvent;
+import elemental2.dom.CustomEventInit;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.PopStateEvent;
 import jsinterop.base.Js;
@@ -26,31 +29,50 @@ public class StateHistory implements AppHistory {
                 inform(windowToken(), windowTitle(), "");
             }
         });
+
+        DomGlobal.document.addEventListener("domino-history-event", evt -> {
+
+            CustomEvent tokenEvent =Js.uncheckedCast(evt);
+            JsMap<String, String> tokenMap = Js.uncheckedCast(tokenEvent.detail);
+            final List<HistoryListener> completedListeners = new ArrayList<>();
+            String token = tokenMap.get("token");
+            String title = tokenMap.get("title");
+            String stateJson = tokenMap.get("stateJson");
+            listeners.stream()
+                    .filter(l -> {
+                        NormalizedToken normalized = getNormalizedToken(token, l);
+                        if (isNull(normalized)) {
+                            normalized = new DefaultNormalizedToken(token);
+                        }
+                        return l.getTokenFilter().filter(new DominoHistoryState(normalized.getToken().value(), title, stateJson).token);
+                    })
+                    .forEach(l -> {
+                        if (l.isRemoveOnComplete()) {
+                            completedListeners.add(l);
+                        }
+
+                        Scheduler.get()
+                                .scheduleDeferred(() -> {
+                                    NormalizedToken normalized = getNormalizedToken(token, l);
+                                    l.getListener().onPopState(new DominoHistoryState(normalized, token, title, stateJson));
+                                });
+                    });
+
+            listeners.removeAll(completedListeners);
+        });
     }
 
     private void inform(String token, String title, String stateJson) {
-        final List<HistoryListener> completedListeners = new ArrayList<>();
-        listeners.stream()
-                .filter(l -> {
-                    NormalizedToken normalized = getNormalizedToken(token, l);
-                    if (isNull(normalized)) {
-                        normalized = new DefaultNormalizedToken(token);
-                    }
-                    return l.getTokenFilter().filter(new DominoHistoryState(normalized.getToken().value(), title, stateJson).token);
-                })
-                .forEach(l -> {
-                    if (l.isRemoveOnComplete()) {
-                        completedListeners.add(l);
-                    }
+        JsMap<String, String> tokenMap = new JsMap<>();
+        tokenMap.set("token", token);
+        tokenMap.set("title", title);
+        tokenMap.set("stateJson", stateJson);
 
-                    Scheduler.get()
-                            .scheduleDeferred(() -> {
-                                NormalizedToken normalized = getNormalizedToken(token, l);
-                                l.getListener().onPopState(new DominoHistoryState(normalized, token, title, stateJson));
-                            });
-                });
+        CustomEventInit tokenEventInit=CustomEventInit.create();
+        tokenEventInit.setDetail(tokenMap);
 
-        listeners.removeAll(completedListeners);
+        CustomEvent tokenEvent= new CustomEvent("domino-history-event", tokenEventInit);
+        DomGlobal.document.dispatchEvent(tokenEvent);
     }
 
     private NormalizedToken getNormalizedToken(String token, HistoryListener listener) {

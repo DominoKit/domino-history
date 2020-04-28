@@ -409,8 +409,9 @@ public class StateHistoryToken implements HistoryToken {
 
     private List<Parameter> parsedParameters(String queryString) {
         return Stream.of(queryString.split("&"))
+//                .filter(part -> part.contains("="))
                 .map(part -> part.split("="))
-                .map(keyValue -> new Parameter(keyValue[0], keyValue[1]))
+                .map(keyValue -> new Parameter(keyValue[0], keyValue[0]))
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 

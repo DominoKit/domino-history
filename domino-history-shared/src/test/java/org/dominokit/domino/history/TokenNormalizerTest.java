@@ -130,4 +130,9 @@ public class TokenNormalizerTest {
 
         assertThat(normalized.getToken()).isEqualTo(expected);
     }
+
+    @Test
+    public void testReportedBug(){
+
+    }
 }
