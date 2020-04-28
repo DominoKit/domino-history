@@ -31,7 +31,7 @@ public class StateHistoryToken implements HistoryToken {
     }
 
     private List<String> parseFragments(String token) {
-        if (token.contains("#"))
+        if (token.contains("#") && token.indexOf("#") < token.length() - 1)
             return asPathsList(token.split(FRAGMENT_REGEX)[1]);
         return new LinkedList<>();
     }
@@ -194,7 +194,7 @@ public class StateHistoryToken implements HistoryToken {
     @Override
     public HistoryToken replacePath(String path, String replacement) {
         List<String> paths = asPathsList(path());
-        if(paths.contains(path)) {
+        if (paths.contains(path)) {
             int i = paths.indexOf(path);
             paths.add(i, replacement);
             paths.remove(i + 1);
@@ -206,7 +206,7 @@ public class StateHistoryToken implements HistoryToken {
     @Override
     public HistoryToken replaceLastPath(String path, String replacement) {
         List<String> paths = asPathsList(path());
-        if(paths.contains(path)) {
+        if (paths.contains(path)) {
             int i = paths.lastIndexOf(path);
             paths.add(i, replacement);
             paths.remove(i + 1);
@@ -225,7 +225,7 @@ public class StateHistoryToken implements HistoryToken {
     public HistoryToken replaceFragment(String fragment, String replacement) {
 
         List<String> fragments = asPathsList(fragment());
-        if(fragments.contains(fragment)) {
+        if (fragments.contains(fragment)) {
             int i = fragments.lastIndexOf(fragment);
             fragments.add(i, replacement);
             fragments.remove(i + 1);
@@ -375,10 +375,10 @@ public class StateHistoryToken implements HistoryToken {
         return isEmpty(query) ? "" : "?" + query;
     }
 
-    private List<String> asPathsList(String pathValue) {
-        if (isNull(pathValue))
-            return asPathsList("null");
-        return Arrays.stream(splittedPaths(pathValue)).filter(p -> !p.isEmpty()).collect(
+    private List<String> asPathsList(String token) {
+        if (isNull(token) || isEmpty(token) || token.startsWith("?") || token.startsWith("#"))
+            return new ArrayList<>();
+        return Arrays.stream(splittedPaths(token)).filter(p -> !p.isEmpty()).collect(
                 Collectors.toCollection(LinkedList::new));
     }
 
@@ -415,19 +415,25 @@ public class StateHistoryToken implements HistoryToken {
     }
 
     private String queryPart(String token) {
-        if (token.contains("?")) {
-            return token.split(QUERY_REGEX)[1].split(FRAGMENT_REGEX)[0];
-        } else {
-            int firstPathSeparator = token.indexOf("/");
-            if(token.contains("&") || token.contains("=") || token.contains("#")) {
-                if (firstPathSeparator < 0 || token.indexOf("&") < firstPathSeparator || token.indexOf("=") < firstPathSeparator || token.indexOf("#") < firstPathSeparator) {
-                    return token.split(FRAGMENT_REGEX)[0];
-                } else {
-                    return "";
+        String query = "";
+        if (token.contains("?") && token.indexOf("?") < token.length() - 1) {
+            String[] parts = token.split(QUERY_REGEX);
+
+            if (parts.length > 1) {
+                if(parts[1].split(FRAGMENT_REGEX).length > 0) {
+                    query = parts[1].split(FRAGMENT_REGEX)[0];
+                }else{
+                  return query;
                 }
+            } else {
+                query = parts[0].split(FRAGMENT_REGEX)[0];
+            }
+
+            if(!query.isEmpty() && !query.contains("=")){
+                throw new InvalidQueryStringException("Query string ["+query+"] is missing '=' operator.");
             }
         }
-        return "";
+        return query;
     }
 
     @Override
