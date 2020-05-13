@@ -486,4 +486,12 @@ public class StateHistoryTokenTest {
     public void invalidQueryParamTest(){
         token("?param1");
     }
+
+    @Test
+    public void issueTest() {
+        StateHistoryToken token = token("/path1/path2?employeeId=129");
+        assertThat(token.query()).isEqualTo("employeeId=129");
+        assertThat(token.queryParameters().size()).isEqualTo(1);
+        assertThat(token.getQueryParameter("employeeId")).isEqualTo("129");
+    }
 }
