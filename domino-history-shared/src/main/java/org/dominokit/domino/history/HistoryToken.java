@@ -87,4 +87,10 @@ public interface HistoryToken {
 
     class TokenCannotBeNullException extends RuntimeException {
     }
+
+    class InvalidQueryStringException extends RuntimeException {
+        public InvalidQueryStringException(String query) {
+            super(query);
+        }
+    }
 }

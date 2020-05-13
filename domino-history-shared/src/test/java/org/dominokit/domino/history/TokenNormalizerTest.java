@@ -84,7 +84,7 @@ public class TokenNormalizerTest {
 
     @Test
     public void testNormalizeEndNoPath(){
-        NormalizedToken normalized = TokenNormalizer.normalizeTail(SAMPLE_TOKEN, "param1=value1&param2=value2&param3=:value3param#fragment1/fragment2/:fragment3param");
+        NormalizedToken normalized = TokenNormalizer.normalizeTail(SAMPLE_TOKEN, "?param1=value1&param2=value2&param3=:value3param#fragment1/fragment2/:fragment3param");
         StateHistoryToken expected = new StateHistoryToken(SAMPLE_TOKEN
                 .replace("value3", ":value3param")
                 .replace("fragment3", ":fragment3param"));
