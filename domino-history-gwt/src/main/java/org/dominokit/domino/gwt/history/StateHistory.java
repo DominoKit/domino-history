@@ -7,7 +7,6 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.PopStateEvent;
 import jsinterop.base.Js;
 import org.dominokit.domino.history.*;
-import org.gwtproject.core.client.Scheduler;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -60,11 +59,10 @@ public class StateHistory implements AppHistory {
                         completedListeners.add(l);
                     }
 
-                    Scheduler.get()
-                            .scheduleDeferred(() -> {
-                                NormalizedToken normalized = getNormalizedToken(token, l);
-                                l.getListener().onPopState(new DominoHistoryState(normalized, token, title, stateJson));
-                            });
+                    DomGlobal.setTimeout(p0 -> {
+                        NormalizedToken normalized = getNormalizedToken(token, l);
+                        l.getListener().onPopState(new DominoHistoryState(normalized, token, title, stateJson));
+                    }, 0);
                 });
 
         listeners.removeAll(completedListeners);
