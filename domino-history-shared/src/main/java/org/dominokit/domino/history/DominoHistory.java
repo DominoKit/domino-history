@@ -16,6 +16,8 @@ public interface DominoHistory {
 
     void forward();
 
+    int getHistoryEntriesCount();
+
     void pushState(String token, String title, String data);
     void pushState(String token, String title, String data, TokenParameter... parameters);
     void pushState(String token);

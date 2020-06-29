@@ -35,7 +35,7 @@ public class StateHistory implements AppHistory {
 
         DomGlobal.document.addEventListener("domino-history-event", evt -> {
 
-            CustomEvent tokenEvent =Js.uncheckedCast(evt);
+            CustomEvent tokenEvent = Js.uncheckedCast(evt);
             JsMap<String, String> tokenMap = Js.uncheckedCast(tokenEvent.detail);
             String token = tokenMap.get("token");
             String title = tokenMap.get("title");
@@ -80,7 +80,7 @@ public class StateHistory implements AppHistory {
 
             CustomEvent tokenEvent = new CustomEvent("domino-history-event", tokenEventInit);
             DomGlobal.document.dispatchEvent(tokenEvent);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Custom events not supported for this browser, multia-pp support wont work. will inform local app listeners only");
             callListeners(token, title, stateJson);
         }
@@ -130,6 +130,11 @@ public class StateHistory implements AppHistory {
     @Override
     public void forward() {
         history.forward();
+    }
+
+    @Override
+    public int getHistoryEntriesCount() {
+        return new Double(history.getLength()).intValue();
     }
 
     @Override

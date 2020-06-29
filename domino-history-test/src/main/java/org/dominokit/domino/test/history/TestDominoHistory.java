@@ -75,7 +75,7 @@ public class TestDominoHistory implements AppHistory {
     }
 
     @Override
-    public void back() {
+    public void  back() {
         if (!backwards.isEmpty()) {
             final HistoryState state = backwards.pop();
             forwards.push(state);
@@ -90,6 +90,11 @@ public class TestDominoHistory implements AppHistory {
             backwards.push(state);
             inform(state);
         }
+    }
+
+    @Override
+    public int getHistoryEntriesCount() {
+        return backwards.size();
     }
 
     @Override
