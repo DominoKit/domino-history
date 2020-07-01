@@ -9,6 +9,7 @@
         <module>domino-history-shared</module>
         <module>domino-history-gwt</module>
         <module>domino-history-test</module>
+        <module>domino-history-jvm</module>
     </modules>
     <packaging>pom</packaging>
     <name>domino-history</name>

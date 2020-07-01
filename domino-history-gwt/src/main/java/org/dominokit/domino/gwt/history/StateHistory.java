@@ -143,10 +143,20 @@ public class StateHistory implements AppHistory {
     }
 
     @Override
+    public void pushState(String token, String title) {
+        pushState(token, title, "", new TokenParameter[0]);
+    }
+
+    @Override
     public void pushState(String token, String title, String data, TokenParameter... parameters) {
         String tokenWithParameters = replaceParameters(token, Arrays.asList(parameters));
-        if (nonNull(currentToken().value()) && !currentToken().value().equals(tokenWithParameters))
+        if (nonNull(currentToken().value()) && !currentToken().value().equals(tokenWithParameters)) {
             history.pushState(JsState.state(tokenWithParameters, title, data), title, "/" + tokenWithParameters);
+            if(nonNull(title) && !title.isEmpty()){
+                DomGlobal.document.title = title;
+            }
+        }
+
     }
 
     private String replaceParameters(String token, List<TokenParameter> parametersList) {
@@ -198,18 +208,83 @@ public class StateHistory implements AppHistory {
     }
 
     @Override
+    public void pushState(HistoryToken token, String title, String data) {
+        pushState(token.value(), title, data);
+    }
+
+    @Override
+    public void pushState(HistoryToken token, String title, String data, TokenParameter... parameters) {
+        pushState(token.value(), title, data, parameters);
+    }
+
+    @Override
+    public void pushState(HistoryToken token) {
+        pushState(token.value());
+    }
+
+    @Override
+    public void pushState(HistoryToken token, TokenParameter... parameters) {
+        pushState(token.value(), parameters);
+    }
+
+    @Override
+    public void fireState(HistoryToken token, String title, String data) {
+        fireState(token.value(), title, data);
+    }
+
+    @Override
+    public void fireState(HistoryToken token, String title, String data, TokenParameter... parameters) {
+        fireState(token.value(), title, data, parameters);
+    }
+
+    @Override
+    public void fireState(HistoryToken token) {
+        fireState(token.value());
+    }
+
+    @Override
+    public void fireState(HistoryToken token, TokenParameter... parameters) {
+        fireState(token.value(), parameters);
+    }
+
+    @Override
+    public void replaceState(HistoryToken token, String title, String data) {
+        replaceState(token.value(), title, data);
+    }
+
+    @Override
+    public void fireState(String token, String title) {
+        fireState(token, title, "");
+    }
+
+    @Override
+    public void pushState(HistoryToken token, String title) {
+        pushState(token.value(), title, "");
+    }
+
+    @Override
+    public void fireState(HistoryToken token, String title) {
+        fireState(token.value(), title, "");
+    }
+
+    @Override
     public StateHistoryToken currentToken() {
         return new StateHistoryToken(windowToken());
     }
 
     @Override
     public void fireCurrentStateHistory() {
-        fireState(windowToken(), stateData(windowState()));
+        fireStateInternal(windowToken(), windowTitle(), stateData(windowState()));
     }
 
-    private void fireState(String token, String state) {
-        replaceState(token, windowTitle(), state);
-        inform(token, windowTitle(), state);
+    @Override
+    public void fireCurrentStateHistory(String title) {
+        fireStateInternal(windowToken(), title, stateData(windowState()));
+    }
+
+    private void fireStateInternal(String token, String title, String state) {
+        replaceState(token, title, state);
+        inform(token, title, state);
     }
 
     private State windowState() {

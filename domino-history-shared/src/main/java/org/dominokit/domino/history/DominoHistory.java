@@ -19,15 +19,30 @@ public interface DominoHistory {
     int getHistoryEntriesCount();
 
     void pushState(String token, String title, String data);
+    void pushState(String token, String title);
     void pushState(String token, String title, String data, TokenParameter... parameters);
     void pushState(String token);
     void pushState(String token, TokenParameter... parameters);
     void fireState(String token, String title, String data);
+    void fireState(String token, String title);
     void fireState(String token, String title, String data, TokenParameter... parameters);
     void fireState(String token);
     void fireState(String token, TokenParameter... parameters);
 
     void replaceState(String token, String title, String data);
+
+    void pushState(HistoryToken token, String title, String data);
+    void pushState(HistoryToken token, String title);
+    void pushState(HistoryToken token, String title, String data, TokenParameter... parameters);
+    void pushState(HistoryToken token);
+    void pushState(HistoryToken token, TokenParameter... parameters);
+    void fireState(HistoryToken token, String title, String data);
+    void fireState(HistoryToken token, String title);
+    void fireState(HistoryToken token, String title, String data, TokenParameter... parameters);
+    void fireState(HistoryToken token);
+    void fireState(HistoryToken token, TokenParameter... parameters);
+
+    void replaceState(HistoryToken token, String title, String data);
 
     HistoryToken currentToken();
 

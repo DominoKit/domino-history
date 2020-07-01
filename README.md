@@ -71,41 +71,41 @@ public class App implements EntryPoint {
 
 to get the current url token use `history().currentToken()`, every time this method is called it will return a new `HistoryToken` instance. once a token is obtained we can use it to manipulate the token instance, use one of the following methods to make changes to the token or ask for information from the token : 
 
-* `boolean startsWithPath(String path)` : returns true if the token starts with the path.
-* `boolean endsWithPath(String path)` : returns true if the paths part ends with the path.
-* `boolean containsPath(String path)` : returns true if the paths contains the path.
-* `List<String> paths()` : returns a list of all paths in the token.
-* `String path()` : returns the paths part of the token as a String.
-* `HistoryToken appendPath(String path)` : add a new path at the end the token path.
-* `HistoryToken replacePath(String path, String replacement)` : replace a specific path with a new one.
-* `HistoryToken replaceAllPaths(String newPath)` : replace all paths with a new path.
-* `HistoryToken removePath(String path)` : removes a specific path from the token.
-* `HistoryToken removeLastPath(String path)` : removes the last path part from the token.
-* `HistoryToken replaceLastPath(String replacement)` : replace the last path in token with a new path.
-* `HistoryToken clearPaths()` : remove all paths from the token.
-* `boolean fragmentsStartsWith(String fragment)` : return true if the part after the `#` starts with the fragment.
-* `boolean endsWithFragment(String fragment)` : return true if the part after the `#` ends with the fragment.
-* `boolean containsFragment(String fragment)` : return true if the part after the `#` contains the fragment.
-* `List<String> fragments()` : return a list of fragments.
-* `HistoryToken replaceLastFragment(String replacement)` : replace the last fragment with a new one.
-* `HistoryToken removeFragment(String fragment)` : remove a specific fragment.
-* `HistoryToken appendFragment(String fragment)` : append a fragment at the end of the fragments
-* `HistoryToken clearFragments()` : clear all fragments.
-* `HistoryToken replaceFragment(String fragment, String replacement)` : replace a fragment with a new one.
-* `HistoryToken replaceAllFragments(String newFragment)` : replace all fragments with a new one.
-* `String fragment()` : return the fragments as a String.
-* `Map<String, String> queryParameters()` : returns a map of all query parameters.
-* `boolean hasQueryParameter(String name)` : returns true if there is a query name with the specified name.
-* `String getQueryParameter(String name)` : return the value of the specified query parametr.
-* `HistoryToken appendParameter(String name, String value)` : add a new query parameter.
-* `HistoryToken replaceParameter(String name, String replacementName, String replacementValue)` : replace a query parameter with a new one.
-* `HistoryToken removeParameter(String name)` : removes a query parameter.
-* `HistoryToken replaceQuery(String newQuery)` : replace all query part with a new one.
-* `HistoryToken clearQuery()` : remove all query parameters.
-* `String query()` : return the query parameters as a String.
-* `boolean isEmpty()` : returns true if the token is empty.
-* `HistoryToken clear()` : remove all paths, query parameters and fragments and makes the token empty.
-* `String value()` : return the token as a String.
+* **`boolean startsWithPath(String path)`** : returns true if the token starts with the path.
+* **`boolean endsWithPath(String path)`** : returns true if the paths part ends with the path.
+* **`boolean containsPath(String path)`** : returns true if the paths contains the path.
+* **`List<String> paths()`** : returns a list of all paths in the token.
+* **`String path()`** : returns the paths part of the token as a String.
+* **`HistoryToken appendPath(String path)`** : add a new path at the end the token path.
+* **`HistoryToken replacePath(String path, String replacement)`** : replace a specific path with a new one.
+* **`HistoryToken replaceAllPaths(String newPath)`** : replace all paths with a new path.
+* **`HistoryToken removePath(String path)`** : removes a specific path from the token.
+* **`HistoryToken removeLastPath(String path)`** : removes the last path part from the token.
+* **`HistoryToken replaceLastPath(String replacement)`** : replace the last path in token with a new path.
+* **`HistoryToken clearPaths()`** : remove all paths from the token.
+* **`boolean fragmentsStartsWith(String fragment)`** : return true if the part after the `#` starts with the fragment.
+* **`boolean endsWithFragment(String fragment)`** : return true if the part after the `#` ends with the fragment.
+* **`boolean containsFragment(String fragment)`** : return true if the part after the `#` contains the fragment.
+* **`List<String> fragments()`** : return a list of fragments.
+* **`HistoryToken replaceLastFragment(String replacement)`** : replace the last fragment with a new one.
+* **`HistoryToken removeFragment(String fragment)`** : remove a specific fragment.
+* **`HistoryToken appendFragment(String fragment)`** : append a fragment at the end of the fragments
+* **`HistoryToken clearFragments()`** : clear all fragments.
+* **`HistoryToken replaceFragment(String fragment, String replacement)`** : replace a fragment with a new one.
+* **`HistoryToken replaceAllFragments(String newFragment)`** : replace all fragments with a new one.
+* **`String fragment()`** : return the fragments as a String.
+* **`Map<String, String> queryParameters()`** : returns a map of all query parameters.
+* **`boolean hasQueryParameter(String name)`** : returns true if there is a query name with the specified name.
+* **`String getQueryParameter(String name)`** : return the value of the specified query parametr.
+* **`HistoryToken appendParameter(String name, String value)`** : add a new query parameter.
+* **`HistoryToken replaceParameter(String name, String replacementName, String replacementValue)`** : replace a query parameter with a new one.
+* **`HistoryToken removeParameter(String name)`** : removes a query parameter.
+* **`HistoryToken replaceQuery(String newQuery)`** : replace all query part with a new one.
+* **`HistoryToken clearQuery()`** : remove all query parameters.
+* **`String query()`** : return the query parameters as a String.
+* **`boolean isEmpty()`** : returns true if the token is empty.
+* **`HistoryToken clear()`** : remove all paths, query parameters and fragments and makes the token empty.
+* **`String value()`** : return the token as a String.
 
 ### Token Filters
 
@@ -121,6 +121,41 @@ history.listen(TokenFilter.startsWithPathFilter("path1"), state -> {
     console.info(state.token().value());
 });
 ```
+#### Built-in token filters
+
+* **`exactMatch(String matchingToken)`**
+
+* **`startsWith(String prefix)`**
+
+* **`endsWith(String postfix)`**
+
+* **`contains(String part)`**
+
+* **`any()`**
+
+* **`exactFragmentMatch(String matchingToken)`**
+
+* **`startsWithFragment(String prefix)`**
+
+* **`endsWithFragment(String postfix)`**
+
+* **`containsFragment(String part)`**
+
+* **`anyFragment()`**
+
+* **`hasPathFilter(String path)`**
+
+* **`hasPathsFilter(String... paths)`**
+
+* **`exactPathFilter(String path)`**
+
+* **`startsWithPathFilter(String path)`**
+
+* **`endsWithPathFilter(String path)`**
+
+* **`anyPathFilter()`**
+
+* **`isEmpty()`**
 
 ### Wildcards
 
