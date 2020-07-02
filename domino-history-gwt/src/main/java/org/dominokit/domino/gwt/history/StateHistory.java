@@ -24,17 +24,18 @@ public class StateHistory implements AppHistory {
 
     public StateHistory() {
         DomGlobal.self.addEventListener("popstate", event -> {
-            PopStateEvent popStateEvent = Js.cast(event);
-            JsState state = Js.cast(popStateEvent.state);
-            if (nonNull(state) && nonNull(state.historyToken)) {
-                inform(state.historyToken, state.title, state.data);
-            } else {
-                inform(windowToken(), windowTitle(), "");
+            if(isInformOnPopState()) {
+                PopStateEvent popStateEvent = Js.cast(event);
+                JsState state = Js.cast(popStateEvent.state);
+                if (nonNull(state) && nonNull(state.historyToken)) {
+                    inform(state.historyToken, state.title, state.data);
+                } else {
+                    inform(windowToken(), windowTitle(), "");
+                }
             }
         });
 
         DomGlobal.document.addEventListener("domino-history-event", evt -> {
-
             CustomEvent tokenEvent = Js.uncheckedCast(evt);
             JsMap<String, String> tokenMap = Js.uncheckedCast(tokenEvent.detail);
             String token = tokenMap.get("token");
@@ -58,7 +59,6 @@ public class StateHistory implements AppHistory {
                     if (l.isRemoveOnComplete()) {
                         completedListeners.add(l);
                     }
-
                     DomGlobal.setTimeout(p0 -> {
                         NormalizedToken normalized = getNormalizedToken(token, l);
                         l.getListener().onPopState(new DominoHistoryState(normalized, token, title, stateJson));
