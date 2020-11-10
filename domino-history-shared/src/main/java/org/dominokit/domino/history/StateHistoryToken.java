@@ -159,6 +159,15 @@ public class StateHistoryToken implements HistoryToken {
         }
     }
 
+    @Override
+    public HistoryToken setQueryParameter(String name, String value) {
+        if(hasQueryParameter(name)){
+            removeParameter(name);
+        }
+        appendParameter(name, value);
+        return this;
+    }
+
     private Parameter getParameter(String name) {
         Optional<Parameter> param = queryParameters.stream()
                 .filter(parameter -> parameter.key.equals(name))
@@ -310,7 +319,10 @@ public class StateHistoryToken implements HistoryToken {
 
     @Override
     public HistoryToken removeParameter(String name) {
-        this.queryParameters.remove(name);
+        Parameter parameter = getParameter(name);
+        if(nonNull(parameter)) {
+            this.queryParameters.remove(parameter);
+        }
         return this;
     }
 

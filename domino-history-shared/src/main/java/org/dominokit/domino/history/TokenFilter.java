@@ -80,6 +80,10 @@ public interface TokenFilter {
         return new EmptyFilter();
     }
 
+    static TokenFilter queryParam(String paramName, String value){
+        return new QueryFilter(paramName, value);
+    }
+
     class AnyFilter implements TokenFilter {
         @Override
         public boolean filter(HistoryToken token) {
@@ -370,6 +374,27 @@ public interface TokenFilter {
         @Override
         public boolean filter(HistoryToken token) {
             return token.isEmpty();
+        }
+
+        @Override
+        public NormalizedToken normalizeToken(String token) {
+            return new DefaultNormalizedToken(token);
+        }
+    }
+
+    class QueryFilter implements TokenFilter {
+
+        private String queryParam;
+        private String value;
+
+        public QueryFilter(String queryParam, String value) {
+            this.queryParam = queryParam;
+            this.value = value;
+        }
+
+        @Override
+        public boolean filter(HistoryToken token) {
+            return token.hasQueryParameter(queryParam) && token.getQueryParameter(queryParam).equals(value);
         }
 
         @Override

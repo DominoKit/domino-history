@@ -53,6 +53,8 @@ public interface HistoryToken {
 
     String getQueryParameter(String name);
 
+    HistoryToken setQueryParameter(String name, String value);
+
     HistoryToken appendFragment(String fragment);
 
     HistoryToken appendParameter(String name, String value);
