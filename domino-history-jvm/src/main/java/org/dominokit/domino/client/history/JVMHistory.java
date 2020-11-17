@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dominokit.domino.test.history;
+package org.dominokit.domino.client.history;
 
 import static java.util.Objects.isNull;
 
 import java.util.*;
 import org.dominokit.domino.history.*;
 
-public class TestDominoHistory implements AppHistory {
+public class JVMHistory implements AppHistory {
 
   private Set<HistoryListener> listeners = new HashSet<>();
   private Deque<HistoryState> forwards = new LinkedList<>();
@@ -54,8 +54,8 @@ public class TestDominoHistory implements AppHistory {
   }
 
   private State currentState() {
-    if (forwards.isEmpty()) return new TestState(nullState());
-    return new TestState(forwards.peek());
+    if (forwards.isEmpty()) return new JVMState(nullState());
+    return new JVMState(forwards.peek());
   }
 
   private HistoryState nullState() {
@@ -72,7 +72,7 @@ public class TestDominoHistory implements AppHistory {
                 normalized = new DefaultNormalizedToken(state.token);
               }
               return l.tokenFilter.filter(
-                  new TestState(new HistoryState(normalized.getToken().value(), "test")).token());
+                  new JVMState(new HistoryState(normalized.getToken().value(), "")).token());
             })
         .forEach(
             l -> {
@@ -82,8 +82,7 @@ public class TestDominoHistory implements AppHistory {
 
               NormalizedToken normalized = getNormalizedToken(state.token, l);
               l.listener.onPopState(
-                  new TestState(
-                      normalized, new HistoryState(normalized.getToken().value(), "test")));
+                  new JVMState(normalized, new HistoryState(normalized.getToken().value(), "")));
             });
 
     listeners.removeAll(completedListeners);
@@ -299,16 +298,16 @@ public class TestDominoHistory implements AppHistory {
     return backwards;
   }
 
-  private class TestState implements State {
+  private class JVMState implements State {
 
     private final HistoryState historyState;
     private NormalizedToken normalizedToken;
 
-    private TestState(HistoryState historyState) {
+    private JVMState(HistoryState historyState) {
       this.historyState = historyState;
     }
 
-    private TestState(NormalizedToken normalizedToken, HistoryState historyState) {
+    private JVMState(NormalizedToken normalizedToken, HistoryState historyState) {
       this.normalizedToken = normalizedToken;
       this.historyState = historyState;
     }
@@ -325,7 +324,7 @@ public class TestDominoHistory implements AppHistory {
 
     @Override
     public String title() {
-      return "test title";
+      return "";
     }
 
     @Override

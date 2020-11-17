@@ -17,5 +17,8 @@
 
 -->
 <module>
+    <inherits name="org.dominokit.domino.history.History"/>
+    <inherits name="elemental2.core.Core"/>
+    <inherits name="org.gwtproject.core.Core"/>
     <source path=""/>
 </module>

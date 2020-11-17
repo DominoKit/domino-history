@@ -15,7 +15,7 @@ A wrapper for browser history state API
 
 ### GWT inherits
 
-`<inherits name="org.dominokit.domino.gwt.history.History"/>`
+`<inherits name="History"/>`
 
 ### Usage
 

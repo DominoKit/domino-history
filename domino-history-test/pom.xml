@@ -5,13 +5,14 @@
     <parent>
         <artifactId>domino-history</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0-rc.4-SNAPSHOT</version>
+        <version>1.0.0-RC1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>domino-history-test</artifactId>
 
     <name>domino-history-test</name>
+    <description>Provides the test implementation for domino-history</description>
     <url>https://github.com/DominoKit/domino-history</url>
 
     <dependencies>

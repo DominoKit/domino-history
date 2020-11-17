@@ -13,10 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dominokit.domino.history;
+package org.dominokit.domino.client.history;
 
-public interface CurrentStateHistory {
-  void fireCurrentStateHistory();
+import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
 
-  void fireCurrentStateHistory(String title);
+@JsType(isNative = true, namespace = JsPackage.GLOBAL)
+public class History {
+
+  @JsProperty
+  public native double getLength();
+
+  public native void back();
+
+  public native void forward();
+
+  public native void pushState(JsState jsState, String title, String url);
+
+  public native void replaceState(JsState jsState, String title, String url);
 }

@@ -1,406 +1,426 @@
+/*
+ * Copyright © 2019 Dominokit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dominokit.domino.history;
-
-import java.util.Arrays;
 
 import static java.util.Objects.nonNull;
 
+import java.util.Arrays;
+
 public interface TokenFilter {
 
-    boolean filter(HistoryToken token);
+  boolean filter(HistoryToken token);
 
-    default NormalizedToken normalizeToken(String token) {
-        return null;
+  default NormalizedToken normalizeToken(String token) {
+    return null;
+  }
+
+  static TokenFilter exactMatch(String matchingToken) {
+    return new TokenFilter.ExactMatchFilter(matchingToken);
+  }
+
+  static TokenFilter startsWith(String prefix) {
+    return new TokenFilter.StartsWithFilter(prefix);
+  }
+
+  static TokenFilter endsWith(String postfix) {
+    return new TokenFilter.EndsWithFilter(postfix);
+  }
+
+  static TokenFilter contains(String part) {
+    return new TokenFilter.ContainsFilter(part);
+  }
+
+  static TokenFilter any() {
+    return new TokenFilter.AnyFilter();
+  }
+
+  static TokenFilter exactFragmentMatch(String matchingToken) {
+    return new TokenFilter.ExactFragmentFilter(matchingToken);
+  }
+
+  static TokenFilter startsWithFragment(String prefix) {
+    return new TokenFilter.StartsWithFragmentFilter(prefix);
+  }
+
+  static TokenFilter endsWithFragment(String postfix) {
+    return new TokenFilter.EndsWithFragmentFilter(postfix);
+  }
+
+  static TokenFilter containsFragment(String part) {
+    return new TokenFilter.ContainsFragmentFilter(part);
+  }
+
+  static TokenFilter anyFragment() {
+    return new TokenFilter.AnyFragmentFilter();
+  }
+
+  static TokenFilter hasPathFilter(String path) {
+    return new HasPathFilter(path);
+  }
+
+  static TokenFilter hasPathsFilter(String... paths) {
+    return new HasPathsFilter(paths);
+  }
+
+  static TokenFilter exactPathFilter(String path) {
+    return new ExactPathFilter(path);
+  }
+
+  static TokenFilter startsWithPathFilter(String path) {
+    return new StartsWithPathFilter(path);
+  }
+
+  static TokenFilter endsWithPathFilter(String path) {
+    return new EndsWithPathFilter(path);
+  }
+
+  static TokenFilter anyPathFilter() {
+    return new AnyPathFilter();
+  }
+
+  static TokenFilter isEmpty() {
+    return new EmptyFilter();
+  }
+
+  static TokenFilter queryParam(String paramName, String value) {
+    return new QueryFilter(paramName, value);
+  }
+
+  class AnyFilter implements TokenFilter {
+    @Override
+    public boolean filter(HistoryToken token) {
+      return true;
     }
 
-    static TokenFilter exactMatch(String matchingToken) {
-        return new TokenFilter.ExactMatchFilter(matchingToken);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return new DefaultNormalizedToken(token);
+    }
+  }
+
+  class ExactMatchFilter implements TokenFilter {
+    private final String matchingToken;
+
+    ExactMatchFilter(String matchingToken) {
+      this.matchingToken = matchingToken;
     }
 
-    static TokenFilter startsWith(String prefix) {
-        return new TokenFilter.StartsWithFilter(prefix);
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.value().equals(matchingToken);
     }
 
-    static TokenFilter endsWith(String postfix) {
-        return new TokenFilter.EndsWithFilter(postfix);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalize(token, matchingToken);
+    }
+  }
+
+  class StartsWithFilter implements TokenFilter {
+    private final String prefix;
+
+    StartsWithFilter(String prefix) {
+      this.prefix = prefix;
     }
 
-    static TokenFilter contains(String part) {
-        return new TokenFilter.ContainsFilter(part);
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.value().startsWith(prefix);
     }
 
-    static TokenFilter any() {
-        return new TokenFilter.AnyFilter();
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalize(token, prefix);
+    }
+  }
+
+  class EndsWithFilter implements TokenFilter {
+    private final String postfix;
+
+    EndsWithFilter(String postfix) {
+      this.postfix = postfix;
     }
 
-    static TokenFilter exactFragmentMatch(String matchingToken) {
-        return new TokenFilter.ExactFragmentFilter(matchingToken);
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.value().endsWith(postfix);
     }
 
-    static TokenFilter startsWithFragment(String prefix) {
-        return new TokenFilter.StartsWithFragmentFilter(prefix);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalizeTail(token, postfix);
+    }
+  }
+
+  class ContainsFilter implements TokenFilter {
+    private final String matchingPart;
+
+    ContainsFilter(String matchingPart) {
+      this.matchingPart = matchingPart;
     }
 
-    static TokenFilter endsWithFragment(String postfix) {
-        return new TokenFilter.EndsWithFragmentFilter(postfix);
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.value().contains(matchingPart);
     }
 
-    static TokenFilter containsFragment(String part) {
-        return new TokenFilter.ContainsFragmentFilter(part);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      if (token.contains(":")) {
+        throw new UnsupportedOperationException(
+            "Contains filter cannot normalize token, please remove all variable from filter!");
+      }
+      return new DefaultNormalizedToken(token);
+    }
+  }
+
+  class ContainsFragmentFilter implements TokenFilter {
+    private final String matchingPart;
+
+    ContainsFragmentFilter(String matchingPart) {
+      this.matchingPart = matchingPart;
     }
 
-    static TokenFilter anyFragment() {
-        return new TokenFilter.AnyFragmentFilter();
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.fragment().contains(matchingPart);
     }
 
-    static TokenFilter hasPathFilter(String path) {
-        return new HasPathFilter(path);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      if (token.contains(":")) {
+        throw new UnsupportedOperationException(
+            "Contains fragment filter cannot normalize token, please remove all variable from filter!");
+      }
+      return new DefaultNormalizedToken(token);
+    }
+  }
+
+  class ExactFragmentFilter implements TokenFilter {
+    private final String matchingPart;
+
+    ExactFragmentFilter(String matchingPart) {
+      this.matchingPart = matchingPart;
     }
 
-    static TokenFilter hasPathsFilter(String... paths) {
-        return new HasPathsFilter(paths);
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.fragment().equals(matchingPart);
     }
 
-    static TokenFilter exactPathFilter(String path) {
-        return new ExactPathFilter(path);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalizeFragments(token, matchingPart);
+    }
+  }
+
+  class StartsWithFragmentFilter implements TokenFilter {
+    private final String prefix;
+
+    StartsWithFragmentFilter(String prefix) {
+      this.prefix = prefix;
     }
 
-    static TokenFilter startsWithPathFilter(String path) {
-        return new StartsWithPathFilter(path);
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.fragment().startsWith(prefix);
     }
 
-    static TokenFilter endsWithPathFilter(String path) {
-        return new EndsWithPathFilter(path);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalizeFragments(token, prefix);
+    }
+  }
+
+  class EndsWithFragmentFilter implements TokenFilter {
+    private final String postfix;
+
+    EndsWithFragmentFilter(String postfix) {
+      this.postfix = postfix;
     }
 
-    static TokenFilter anyPathFilter() {
-        return new AnyPathFilter();
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.fragment().endsWith(postfix);
     }
 
-    static TokenFilter isEmpty(){
-        return new EmptyFilter();
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalizeFragmentsTail(token, postfix);
+    }
+  }
+
+  class AnyFragmentFilter implements TokenFilter {
+
+    @Override
+    public boolean filter(HistoryToken token) {
+      return nonNull(token.fragment()) && !token.fragment().isEmpty();
     }
 
-    static TokenFilter queryParam(String paramName, String value){
-        return new QueryFilter(paramName, value);
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return new DefaultNormalizedToken(token);
+    }
+  }
+
+  class HasPathFilter implements TokenFilter {
+    private final String path;
+
+    HasPathFilter(String path) {
+      this.path = path;
     }
 
-    class AnyFilter implements TokenFilter {
-        @Override
-        public boolean filter(HistoryToken token) {
-            return true;
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return new DefaultNormalizedToken(token);
-        }
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.paths().contains(path);
     }
 
-    class ExactMatchFilter implements TokenFilter {
-        private final String matchingToken;
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      if (token.contains(":")) {
+        throw new UnsupportedOperationException(
+            "Has path filter cannot normalize token, please remove all variable from filter!");
+      }
+      return new DefaultNormalizedToken(token);
+    }
+  }
 
-        ExactMatchFilter(String matchingToken) {
-            this.matchingToken = matchingToken;
-        }
+  class HasPathsFilter implements TokenFilter {
+    private final String[] path;
 
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.value().equals(matchingToken);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalize(token, matchingToken);
-        }
+    HasPathsFilter(String... path) {
+      this.path = path;
     }
 
-    class StartsWithFilter implements TokenFilter {
-        private final String prefix;
-
-        StartsWithFilter(String prefix) {
-            this.prefix = prefix;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.value().startsWith(prefix);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalize(token, prefix);
-        }
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.paths().containsAll(Arrays.asList(path));
     }
 
-    class EndsWithFilter implements TokenFilter {
-        private final String postfix;
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      if (token.contains(":")) {
+        throw new UnsupportedOperationException(
+            "Has paths filter cannot normalize token, please remove all variable from filter!");
+      }
+      return new DefaultNormalizedToken(token);
+    }
+  }
 
-        EndsWithFilter(String postfix) {
-            this.postfix = postfix;
-        }
+  class ExactPathFilter implements TokenFilter {
+    private final String path;
 
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.value().endsWith(postfix);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalizeTail(token, postfix);
-        }
+    ExactPathFilter(String path) {
+      this.path = path;
     }
 
-    class ContainsFilter implements TokenFilter {
-        private final String matchingPart;
-
-        ContainsFilter(String matchingPart) {
-            this.matchingPart = matchingPart;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.value().contains(matchingPart);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            if (token.contains(":")) {
-                throw new UnsupportedOperationException("Contains filter cannot normalize token, please remove all variable from filter!");
-            }
-            return new DefaultNormalizedToken(token);
-        }
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.path().equals(path);
     }
 
-    class ContainsFragmentFilter implements TokenFilter {
-        private final String matchingPart;
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalizePaths(token, path);
+    }
+  }
 
-        ContainsFragmentFilter(String matchingPart) {
-            this.matchingPart = matchingPart;
-        }
+  class StartsWithPathFilter implements TokenFilter {
+    private final String path;
 
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.fragment().contains(matchingPart);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            if (token.contains(":")) {
-                throw new UnsupportedOperationException("Contains fragment filter cannot normalize token, please remove all variable from filter!");
-            }
-            return new DefaultNormalizedToken(token);
-        }
+    StartsWithPathFilter(String path) {
+      this.path = path;
     }
 
-    class ExactFragmentFilter implements TokenFilter {
-        private final String matchingPart;
-
-        ExactFragmentFilter(String matchingPart) {
-            this.matchingPart = matchingPart;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.fragment().equals(matchingPart);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalizeFragments(token, matchingPart);
-        }
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.startsWithPath(path);
     }
 
-    class StartsWithFragmentFilter implements TokenFilter {
-        private final String prefix;
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalizePaths(token, path);
+    }
+  }
 
-        StartsWithFragmentFilter(String prefix) {
-            this.prefix = prefix;
-        }
+  class EndsWithPathFilter implements TokenFilter {
+    private final String path;
 
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.fragment().startsWith(prefix);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalizeFragments(token, prefix);
-        }
+    EndsWithPathFilter(String path) {
+      this.path = path;
     }
 
-    class EndsWithFragmentFilter implements TokenFilter {
-        private final String postfix;
-
-        EndsWithFragmentFilter(String postfix) {
-            this.postfix = postfix;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.fragment().endsWith(postfix);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalizeFragmentsTail(token, postfix);
-        }
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.path().endsWith(path);
     }
 
-    class AnyFragmentFilter implements TokenFilter {
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return TokenNormalizer.normalizePathTail(token, path);
+    }
+  }
 
-        @Override
-        public boolean filter(HistoryToken token) {
-            return nonNull(token.fragment()) && !token.fragment().isEmpty();
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return new DefaultNormalizedToken(token);
-        }
+  class AnyPathFilter implements TokenFilter {
+    @Override
+    public boolean filter(HistoryToken token) {
+      return nonNull(token.path()) && !token.paths().isEmpty();
     }
 
-    class HasPathFilter implements TokenFilter {
-        private final String path;
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      if (token.contains(":")) {
+        throw new UnsupportedOperationException(
+            "Has paths filter cannot normalize token, please remove all variable from filter!");
+      }
+      return new DefaultNormalizedToken(token);
+    }
+  }
 
-        HasPathFilter(String path) {
-            this.path = path;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.paths().contains(path);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            if (token.contains(":")) {
-                throw new UnsupportedOperationException("Has path filter cannot normalize token, please remove all variable from filter!");
-            }
-            return new DefaultNormalizedToken(token);
-        }
+  class EmptyFilter implements TokenFilter {
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.isEmpty();
     }
 
-    class HasPathsFilter implements TokenFilter {
-        private final String[] path;
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return new DefaultNormalizedToken(token);
+    }
+  }
 
-        HasPathsFilter(String... path) {
-            this.path = path;
-        }
+  class QueryFilter implements TokenFilter {
 
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.paths().containsAll(Arrays.asList(path));
-        }
+    private String queryParam;
+    private String value;
 
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            if (token.contains(":")) {
-                throw new UnsupportedOperationException("Has paths filter cannot normalize token, please remove all variable from filter!");
-            }
-            return new DefaultNormalizedToken(token);
-        }
+    public QueryFilter(String queryParam, String value) {
+      this.queryParam = queryParam;
+      this.value = value;
     }
 
-    class ExactPathFilter implements TokenFilter {
-        private final String path;
-
-        ExactPathFilter(String path) {
-            this.path = path;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.path().equals(path);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalizePaths(token, path);
-        }
+    @Override
+    public boolean filter(HistoryToken token) {
+      return token.hasQueryParameter(queryParam)
+          && token.getQueryParameter(queryParam).equals(value);
     }
 
-    class StartsWithPathFilter implements TokenFilter {
-        private final String path;
-
-        StartsWithPathFilter(String path) {
-            this.path = path;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.startsWithPath(path);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalizePaths(token, path);
-        }
+    @Override
+    public NormalizedToken normalizeToken(String token) {
+      return new DefaultNormalizedToken(token);
     }
-
-    class EndsWithPathFilter implements TokenFilter {
-        private final String path;
-
-        EndsWithPathFilter(String path) {
-            this.path = path;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.path().endsWith(path);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return TokenNormalizer.normalizePathTail(token, path);
-        }
-    }
-
-    class AnyPathFilter implements TokenFilter {
-        @Override
-        public boolean filter(HistoryToken token) {
-            return nonNull(token.path()) && !token.paths().isEmpty();
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            if (token.contains(":")) {
-                throw new UnsupportedOperationException("Has paths filter cannot normalize token, please remove all variable from filter!");
-            }
-            return new DefaultNormalizedToken(token);
-        }
-    }
-
-    class EmptyFilter implements TokenFilter {
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.isEmpty();
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return new DefaultNormalizedToken(token);
-        }
-    }
-
-    class QueryFilter implements TokenFilter {
-
-        private String queryParam;
-        private String value;
-
-        public QueryFilter(String queryParam, String value) {
-            this.queryParam = queryParam;
-            this.value = value;
-        }
-
-        @Override
-        public boolean filter(HistoryToken token) {
-            return token.hasQueryParameter(queryParam) && token.getQueryParameter(queryParam).equals(value);
-        }
-
-        @Override
-        public NormalizedToken normalizeToken(String token) {
-            return new DefaultNormalizedToken(token);
-        }
-    }
-
+  }
 }
