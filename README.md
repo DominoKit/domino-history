@@ -9,7 +9,7 @@ A wrapper for browser history state API
 <dependency>
   <groupId>org.dominokit</groupId>
   <artifactId>domino-history-gwt</artifactId>
-  <version>1.0-rc.4-SNAPSHOT</version>
+  <version>1.0-alpha-gwt2.8.2-SNAPSHOT</version>
 </dependency>
 ```
 

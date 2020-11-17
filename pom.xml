@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dominokit</groupId>
     <artifactId>domino-history</artifactId>
-    <version>1.0-rc.4-SNAPSHOT</version>
+    <version>1.0-alpha-gwt2.8.2-SNAPSHOT</version>
     <modules>
         <module>domino-history-shared</module>
         <module>domino-history-gwt</module>
