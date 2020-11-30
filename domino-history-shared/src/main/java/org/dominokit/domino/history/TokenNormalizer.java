@@ -20,8 +20,14 @@ import static java.util.Objects.isNull;
 import java.util.List;
 import java.util.Map;
 
+/** A utility class to normalize token over another and produce a {@link NormalizedToken} */
 public class TokenNormalizer {
 
+  /**
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link DefaultNormalizedToken}
+   */
   public static DefaultNormalizedToken normalize(String original, String target) {
     if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
 
@@ -177,6 +183,13 @@ public class TokenNormalizer {
     }
   }
 
+  /**
+   * Normalize the tail of the specified tokens
+   *
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
   public static NormalizedToken normalizeTail(String original, String target) {
     if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
 
@@ -198,6 +211,13 @@ public class TokenNormalizer {
     return false;
   }
 
+  /**
+   * Normalize the tail of the specified tokens fragment parts
+   *
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
   public static NormalizedToken normalizeFragmentsTail(String original, String target) {
     if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
 
@@ -211,7 +231,13 @@ public class TokenNormalizer {
 
     return normalizedToken;
   }
-
+  /**
+   * Normalize the tail of the specified tokens path part
+   *
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
   public static NormalizedToken normalizePathTail(String original, String target) {
     if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
 
@@ -226,6 +252,13 @@ public class TokenNormalizer {
     return normalizedToken;
   }
 
+  /**
+   * Normalize the tail of the specified tokens paths
+   *
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
   public static DefaultNormalizedToken normalizePaths(String original, String target) {
     if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
 
@@ -239,7 +272,13 @@ public class TokenNormalizer {
 
     return normalizedToken;
   }
-
+  /**
+   * Normalize the tail of the specified tokens fragments
+   *
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
   public static DefaultNormalizedToken normalizeFragments(String original, String target) {
     if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
 
@@ -254,6 +293,13 @@ public class TokenNormalizer {
     return normalizedToken;
   }
 
+  /**
+   * Normalize the tail of the specified tokens parameters
+   *
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
   public static DefaultNormalizedToken normalizeParameters(String original, String target) {
     if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
 

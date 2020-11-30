@@ -20,6 +20,7 @@ import static org.dominokit.domino.history.DominoHistory.*;
 
 import java.util.function.Consumer;
 
+/** An implementation of {@link DirectState} */
 public class DominoDirectState implements DirectState {
 
   private final TokenFilter tokenFilter;

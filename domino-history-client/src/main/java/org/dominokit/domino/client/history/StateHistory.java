@@ -19,16 +19,14 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import elemental2.core.JsMap;
-import elemental2.dom.CustomEvent;
-import elemental2.dom.CustomEventInit;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.PopStateEvent;
+import elemental2.dom.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jsinterop.base.Js;
 import org.dominokit.domino.history.*;
 
+/** The browser implementation of the {@link AppHistory} */
 public class StateHistory implements AppHistory {
 
   private static final Logger LOGGER = Logger.getLogger(StateHistory.class.getName());
@@ -36,6 +34,7 @@ public class StateHistory implements AppHistory {
   private Set<HistoryListener> listeners = new HashSet<>();
   private final History history = Js.cast(DomGlobal.self.history);
 
+  /** Default constructor */
   public StateHistory() {
     DomGlobal.self.addEventListener(
         "popstate",
@@ -118,21 +117,52 @@ public class StateHistory implements AppHistory {
     return listener.getTokenFilter().normalizeToken(token);
   }
 
+  /**
+   * Create a listener that will listen for any change in the browser url.
+   *
+   * @param listener {@link StateListener}
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(StateListener listener) {
     return listen(TokenFilter.any(), listener, false);
   }
 
+  /**
+   * Create a listener that will listen for any change that matches the criteria defined by the
+   * token filter.
+   *
+   * @param tokenFilter {@link TokenFilter}
+   * @param listener {@link StateListener}
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(TokenFilter tokenFilter, StateListener listener) {
     return listen(tokenFilter, listener, false);
   }
 
+  /**
+   * Create a listener that will listen to all changes to the browser url and will be removed after
+   * being fired if {removeOnComplete} is true
+   *
+   * @param listener {@link StateListener}
+   * @param removeOnComplete boolean
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(StateListener listener, boolean removeOnComplete) {
     return listen(TokenFilter.any(), listener, removeOnComplete);
   }
 
+  /**
+   * Create a listener that will listen for any change that matches the criteria defined by the
+   * token filter and will be removed after being fired if {removeOnComplete} is true.
+   *
+   * @param tokenFilter {@link TokenFilter}
+   * @param listener {@link StateListener}
+   * @param removeOnComplete boolean
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(
       TokenFilter tokenFilter, StateListener listener, boolean removeOnComplete) {
@@ -147,36 +177,75 @@ public class StateHistory implements AppHistory {
             });
   }
 
+  /**
+   * Manually removes a listener
+   *
+   * @param listener {@link StateListener}
+   */
   @Override
   public void removeListener(StateListener listener) {
     listeners.remove(listener);
   }
 
+  /** Go back one step simulating the browser back button */
   @Override
   public void back() {
     history.back();
   }
 
+  /** Go forward one step simulating the browser forward button */
   @Override
   public void forward() {
     history.forward();
   }
 
+  /**
+   * The count if the current browser history entries
+   *
+   * @return int
+   */
   @Override
   public int getHistoryEntriesCount() {
-    return new Double(history.getLength()).intValue();
+    return new Double(history.length).intValue();
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state.
+   *
+   * @param token The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void pushState(String token, String title, String data) {
     pushState(token, title, data, new TokenParameter[0]);
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners, sets the
+   * title of the new page.
+   *
+   * @param token The new browser url.
+   * @param title The new page title
+   */
   @Override
   public void pushState(String token, String title) {
     pushState(token, title, "", new TokenParameter[0]);
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state. In case the new token has
+   * expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(String token, String title, String data, TokenParameter... parameters) {
     String tokenWithParameters = replaceParameters(token, Arrays.asList(parameters));
@@ -197,33 +266,80 @@ public class StateHistory implements AppHistory {
     return result;
   }
 
+  /**
+   * Change the browser url to the specified token and fire url change listeners.
+   *
+   * @param token The new browser url.
+   */
   @Override
   public void fireState(String token) {
     fireState(token, new TokenParameter[0]);
   }
 
+  /**
+   * Change the browser url to the specified token and fire url change listeners. In case the new
+   * token has expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token The new browser url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(String token, TokenParameter... parameters) {
     pushState(token, parameters);
     fireCurrentStateHistory();
   }
 
+  /**
+   * Change the browser url to the specified token and fire change listeners, sets the title of the
+   * new page and assign the data to the new state.
+   *
+   * @param token The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void fireState(String token, String title, String data) {
     fireState(token, title, data, new TokenParameter[0]);
   }
 
+  /**
+   * Change the browser url to the specified token and fire url change listeners, sets the title of
+   * the new page and assign the data to the new state. In case the new token has expression
+   * parameters in the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
+   *
+   * @param token The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(String token, String title, String data, TokenParameter... parameters) {
     pushState(token, title, data, parameters);
     fireCurrentStateHistory();
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners.
+   *
+   * @param token The new browser url.
+   */
   @Override
   public void pushState(String token) {
     pushState(token, new TokenParameter[0]);
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners. In case the
+   * new token has expression parameters in the form <b>:paramName</b> they will be replaced using
+   * the <b>parameters</b>
+   *
+   * @param token The new browser url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(String token, TokenParameter... parameters) {
     String tokenWithParameters = replaceParameters(token, Arrays.asList(parameters));
@@ -234,83 +350,201 @@ public class StateHistory implements AppHistory {
           "/" + tokenWithParameters);
   }
 
+  /**
+   * Replace the current browser url with the specified token without firing url change listeners,
+   * sets the title of the new page and assign the data to the new state.
+   *
+   * @param token The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void replaceState(String token, String title, String data) {
     history.replaceState(JsState.state(token, data), title, "/" + token);
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state.
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void pushState(HistoryToken token, String title, String data) {
     pushState(token.value(), title, data);
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state. In case the new token has
+   * expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(
       HistoryToken token, String title, String data, TokenParameter... parameters) {
     pushState(token.value(), title, data, parameters);
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners.
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   */
   @Override
   public void pushState(HistoryToken token) {
     pushState(token.value());
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners. In case the
+   * new token has expression parameters in the form <b>:paramName</b> they will be replaced using
+   * the <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(HistoryToken token, TokenParameter... parameters) {
     pushState(token.value(), parameters);
   }
 
+  /**
+   * Change the browser url to the specified token and fire change listeners, sets the title of the
+   * new page and assign the data to the new state.
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void fireState(HistoryToken token, String title, String data) {
     fireState(token.value(), title, data);
   }
 
+  /**
+   * Change the browser url to the specified token and fire url change listeners, sets the title of
+   * the new page and assign the data to the new state. In case the new token has expression
+   * parameters in the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(
       HistoryToken token, String title, String data, TokenParameter... parameters) {
     fireState(token.value(), title, data, parameters);
   }
 
+  /**
+   * Change the browser url to the specified token and fire url change listeners.
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   */
   @Override
   public void fireState(HistoryToken token) {
     fireState(token.value());
   }
 
+  /**
+   * Change the browser url to the specified token and fire url change listeners. In case the new
+   * token has expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(HistoryToken token, TokenParameter... parameters) {
     fireState(token.value(), parameters);
   }
 
+  /**
+   * Replace the current browser url with the specified token without firing url change listeners,
+   * sets the title of the new page and assign the data to the new state.
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void replaceState(HistoryToken token, String title, String data) {
     replaceState(token.value(), title, data);
   }
 
+  /**
+   * Change the browser url to the specified token and fire the url change listeners, sets the title
+   * of the new page.
+   *
+   * @param token The new browser url.
+   * @param title The new page title
+   */
   @Override
   public void fireState(String token, String title) {
     fireState(token, title, "");
   }
 
+  /**
+   * Change the browser url to the specified token without firing url change listeners, sets the
+   * title of the new page.
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param title The new page title
+   */
   @Override
   public void pushState(HistoryToken token, String title) {
     pushState(token.value(), title, "");
   }
 
+  /**
+   * Change the browser url to the specified token and fire the url change listeners, sets the title
+   * of the new page.
+   *
+   * @param token {@link HistoryToken} The new browser url.
+   * @param title The new page title
+   */
   @Override
   public void fireState(HistoryToken token, String title) {
     fireState(token.value(), title, "");
   }
 
+  /**
+   * Parse the current browser url and return an immutable instance of {@link StateHistoryToken}
+   *
+   * @return {@link StateHistoryToken}
+   */
   @Override
   public StateHistoryToken currentToken() {
     return new StateHistoryToken(windowToken());
   }
 
+  /**
+   * Reapply the current token and browser url and force calling all listeners with matching token
+   * filters.
+   */
   @Override
   public void fireCurrentStateHistory() {
     fireStateInternal(windowToken(), windowTitle(), stateData(windowState()));
   }
-
+  /**
+   * Reapply the current token and browser url and force calling all listeners with matching token
+   * filters. and use a new page title.
+   *
+   * @param title
+   */
   @Override
   public void fireCurrentStateHistory(String title) {
     fireStateInternal(windowToken(), title, stateData(windowState()));
@@ -353,8 +587,8 @@ public class StateHistory implements AppHistory {
       }
 
       @Override
-      public String data() {
-        return "";
+      public Optional<String> data() {
+        return Optional.empty();
       }
 
       @Override
@@ -378,7 +612,7 @@ public class StateHistory implements AppHistory {
 
   private String windowToken() {
     Location location = Js.uncheckedCast(DomGlobal.location);
-    return location.getPathname().substring(1) + location.getSearch() + location.getHash();
+    return location.pathname.substring(1) + location.search + location.hash;
   }
 
   private State currentState() {
@@ -386,7 +620,7 @@ public class StateHistory implements AppHistory {
   }
 
   private String stateData(State state) {
-    return isNull(state) ? "" : state.data();
+    return state.data().isPresent() ? state.data().get() : "";
   }
 
   private class DominoHistoryState implements State {
@@ -417,8 +651,8 @@ public class StateHistory implements AppHistory {
     }
 
     @Override
-    public String data() {
-      return this.data;
+    public Optional<String> data() {
+      return Optional.ofNullable(this.data);
     }
 
     @Override

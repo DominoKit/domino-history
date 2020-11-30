@@ -20,27 +20,62 @@ import static java.util.Objects.isNull;
 import java.util.*;
 import org.dominokit.domino.history.*;
 
+/**
+ * An implementation of the {@link AppHistory} that treat the url virtually as a queue of strings
+ * for use in the jvm/test or desktop applications that are not browser based.
+ */
 public class JVMHistory implements AppHistory {
 
   private Set<HistoryListener> listeners = new HashSet<>();
   private Deque<HistoryState> forwards = new LinkedList<>();
   private Deque<HistoryState> backwards = new LinkedList<>();
 
+  /**
+   * Create a listener that will listen for any change in the virtual url.
+   *
+   * @param listener {@link StateListener}
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(StateListener listener) {
     return listen(TokenFilter.any(), listener, false);
   }
 
+  /**
+   * Create a listener that will listen for any change that matches the criteria defined by the
+   * token filter.
+   *
+   * @param tokenFilter {@link TokenFilter}
+   * @param listener {@link StateListener}
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(TokenFilter tokenFilter, StateListener listener) {
     return listen(tokenFilter, listener, false);
   }
 
+  /**
+   * Create a listener that will listen to all changes to the browser url and will be removed after
+   * being fired if {removeOnComplete} is true
+   *
+   * @param listener {@link StateListener}
+   * @param removeOnComplete boolean
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(StateListener listener, boolean removeOnComplete) {
     return listen(TokenFilter.any(), listener, removeOnComplete);
   }
 
+  /**
+   * Create a listener that will listen for any change that matches the criteria defined by the
+   * token filter and will be removed after being fired if {removeOnComplete} is true.
+   *
+   * @param tokenFilter {@link TokenFilter}
+   * @param listener {@link StateListener}
+   * @param removeOnComplete boolean
+   * @return {@link DirectState}
+   */
   @Override
   public DirectState listen(
       TokenFilter tokenFilter, StateListener listener, boolean removeOnComplete) {
@@ -48,6 +83,11 @@ public class JVMHistory implements AppHistory {
     return new DominoDirectState(tokenFilter, currentState(), listener);
   }
 
+  /**
+   * Manually removes a listener
+   *
+   * @param listener {@link StateListener}
+   */
   @Override
   public void removeListener(StateListener listener) {
     listeners.remove(listener);
@@ -92,6 +132,7 @@ public class JVMHistory implements AppHistory {
     return listener.tokenFilter.normalizeToken(token);
   }
 
+  /** Go back one step simulating a back button */
   @Override
   public void back() {
     if (!backwards.isEmpty()) {
@@ -101,6 +142,7 @@ public class JVMHistory implements AppHistory {
     }
   }
 
+  /** Go forward one step simulating a forward button */
   @Override
   public void forward() {
     if (!forwards.isEmpty()) {
@@ -110,137 +152,335 @@ public class JVMHistory implements AppHistory {
     }
   }
 
+  /**
+   * The count if the current history entries
+   *
+   * @return int
+   */
   @Override
   public int getHistoryEntriesCount() {
     return backwards.size();
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state.
+   *
+   * @param token The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void pushState(String token, String title, String data) {
     push(token, data, new TokenParameter[0]);
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state. In case the new token has
+   * expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(String token, String title, String data, TokenParameter... parameters) {
     push(token, data, parameters);
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners.
+   *
+   * @param token The new virtual url.
+   */
   @Override
   public void pushState(String token) {
     push(token, "", new TokenParameter[0]);
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners. In case the
+   * new token has expression parameters in the form <b>:paramName</b> they will be replaced using
+   * the <b>parameters</b>
+   *
+   * @param token The new virtual url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(String token, TokenParameter... parameters) {
     push(token, "", parameters);
   }
 
+  /**
+   * Change the virtual url to the specified token and fire change listeners, sets the title of the
+   * new page and assign the data to the new state.
+   *
+   * @param token The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void fireState(String token, String title, String data) {
     fireState(token, title, data, new TokenParameter[0]);
   }
 
+  /**
+   * Change the virtual url to the specified token and fire url change listeners, sets the title of
+   * the new page and assign the data to the new state. In case the new token has expression
+   * parameters in the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
+   *
+   * @param token The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(String token, String title, String data, TokenParameter... parameters) {
     pushState(token, title, data, parameters);
     fireCurrentStateHistory();
   }
 
+  /**
+   * Change the virtual url to the specified token and fire url change listeners.
+   *
+   * @param token The new virtual url.
+   */
   @Override
   public void fireState(String token) {
     fireState(token, new TokenParameter[0]);
   }
 
+  /**
+   * Change the virtual url to the specified token and fire url change listeners. In case the new
+   * token has expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token The new virtual url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(String token, TokenParameter... parameters) {
     pushState(token, parameters);
     fireCurrentStateHistory();
   }
 
+  /**
+   * Replace the current virtual url with the specified token without firing url change listeners,
+   * sets the title of the new page and assign the data to the new state.
+   *
+   * @param token The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void replaceState(String token, String title, String data) {
     forwards.pop();
     push(token, data);
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state.
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void pushState(HistoryToken token, String title, String data) {
     pushState(token.value(), title, data);
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners, sets the
+   * title of the new page and assign the data to the new state. In case the new token has
+   * expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(
       HistoryToken token, String title, String data, TokenParameter... parameters) {
     pushState(token.value(), title, data, parameters);
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners.
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   */
   @Override
   public void pushState(HistoryToken token) {
     pushState(token.value());
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners. In case the
+   * new token has expression parameters in the form <b>:paramName</b> they will be replaced using
+   * the <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void pushState(HistoryToken token, TokenParameter... parameters) {
     pushState(token.value(), parameters);
   }
 
+  /**
+   * Change the virtual url to the specified token and fire change listeners, sets the title of the
+   * new page and assign the data to the new state.
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void fireState(HistoryToken token, String title, String data) {
     fireState(token.value(), title, data);
   }
 
+  /**
+   * Change the virtual url to the specified token and fire url change listeners, sets the title of
+   * the new page and assign the data to the new state. In case the new token has expression
+   * parameters in the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(
       HistoryToken token, String title, String data, TokenParameter... parameters) {
     fireState(token.value(), title, data, parameters);
   }
 
+  /**
+   * Change the virtual url to the specified token and fire url change listeners.
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   */
   @Override
   public void fireState(HistoryToken token) {
     fireState(token.value());
   }
 
+  /**
+   * Change the virtual url to the specified token and fire url change listeners. In case the new
+   * token has expression parameters in the form <b>:paramName</b> they will be replaced using the
+   * <b>parameters</b>
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
+   *     the url token
+   */
   @Override
   public void fireState(HistoryToken token, TokenParameter... parameters) {
     fireState(token.value(), parameters);
   }
 
+  /**
+   * Replace the current virtual url with the specified token without firing url change listeners,
+   * sets the title of the new page and assign the data to the new state.
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param title The new page title
+   * @param data The data to assign to this page state.
+   */
   @Override
   public void replaceState(HistoryToken token, String title, String data) {
     replaceState(token.value(), title, data);
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners, sets the
+   * title of the new page.
+   *
+   * @param token The new virtual url.
+   * @param title The new page title
+   */
   @Override
   public void pushState(String token, String title) {
     pushState(token, title, "");
   }
 
+  /**
+   * Change the virtual url to the specified token and fire the url change listeners, sets the title
+   * of the new page.
+   *
+   * @param token The new virtual url.
+   * @param title The new page title
+   */
   @Override
   public void fireState(String token, String title) {
     fireState(token, title, "");
   }
 
+  /**
+   * Change the virtual url to the specified token without firing url change listeners, sets the
+   * title of the new page.
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param title The new page title
+   */
   @Override
   public void pushState(HistoryToken token, String title) {
     pushState(token.value(), title, "");
   }
 
+  /**
+   * Change the virtual url to the specified token and fire the url change listeners, sets the title
+   * of the new page.
+   *
+   * @param token {@link HistoryToken} The new virtual url.
+   * @param title The new page title
+   */
   @Override
   public void fireState(HistoryToken token, String title) {
     fireState(token.value(), title, "");
   }
 
+  /**
+   * Parse the current virtual url and return an immutable instance of {@link HistoryToken}
+   *
+   * @return {@link StateHistoryToken}
+   */
   @Override
   public HistoryToken currentToken() {
     if (isNull(forwards.peek())) return new StateHistoryToken("");
     return new StateHistoryToken(forwards.peek().token);
   }
 
+  /**
+   * Reapply the current token and virtual url and force calling all listeners with matching token
+   * filters.
+   */
   @Override
   public void fireCurrentStateHistory() {
     if (!forwards.isEmpty()) inform(forwards.peek());
   }
 
+  /**
+   * Reapply the current token and virtual url and force calling all listeners with matching token
+   * filters. and use a new page title.
+   *
+   * @param title
+   */
   @Override
   public void fireCurrentStateHistory(String title) {
     fireCurrentStateHistory();
@@ -318,8 +558,8 @@ public class JVMHistory implements AppHistory {
     }
 
     @Override
-    public String data() {
-      return historyState.data;
+    public Optional<String> data() {
+      return Optional.ofNullable(historyState.data);
     }
 
     @Override

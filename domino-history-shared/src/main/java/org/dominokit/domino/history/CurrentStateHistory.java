@@ -16,7 +16,15 @@
 package org.dominokit.domino.history;
 
 public interface CurrentStateHistory {
+
+  /** Reapply the current token and force calling all listeners with matching token filters. */
   void fireCurrentStateHistory();
 
+  /**
+   * Reapply the current token and force calling all listeners with matching token filters. and use
+   * a new page title.
+   *
+   * @param title the page title
+   */
   void fireCurrentStateHistory(String title);
 }

@@ -20,6 +20,7 @@ import static java.util.Objects.isNull;
 import java.util.*;
 import org.dominokit.domino.history.*;
 
+/** A test implementation of {@link AppHistory} */
 public class TestDominoHistory implements AppHistory {
 
   private Set<HistoryListener> listeners = new HashSet<>();
@@ -319,8 +320,8 @@ public class TestDominoHistory implements AppHistory {
     }
 
     @Override
-    public String data() {
-      return historyState.data;
+    public Optional<String> data() {
+      return Optional.ofNullable(historyState.data);
     }
 
     @Override

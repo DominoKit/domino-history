@@ -20,10 +20,16 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 
+/** A JsInterop implementation to represent the current state of the page on the browser. */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 public class JsState {
+  /** The url in the browser */
   public String historyToken;
+  /**
+   * Data String assigned to the current browser state, on referesh or reload this is always null
+   */
   public String data;
+  /** The title of the current page */
   public String title;
 
   @JsOverlay

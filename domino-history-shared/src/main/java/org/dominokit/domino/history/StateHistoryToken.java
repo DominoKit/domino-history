@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+/** Implementation for {@link HistoryToken} */
 public class StateHistoryToken implements HistoryToken {
 
   private static final String QUERY_REGEX = "\\?";
@@ -49,12 +50,22 @@ public class StateHistoryToken implements HistoryToken {
     return new LinkedList<>();
   }
 
+  /**
+   * @param path The path to check for
+   * @return <b>true</b> if the url path part starts with the specified path otherwise returns
+   *     <b>false</b>
+   */
   @Override
   public boolean startsWithPath(String path) {
     if (isEmpty(path)) return false;
     return startsWith(paths(), asPathsList(path));
   }
 
+  /**
+   * @param fragment The fragment to check for
+   * @return <b>true</b> if the fragment part of the url starts with the specified fragment
+   *     otherwise returns <b>false</b>
+   */
   @Override
   public boolean fragmentsStartsWith(String fragment) {
     if (isEmpty(fragment)) return false;
@@ -67,12 +78,22 @@ public class StateHistoryToken implements HistoryToken {
     return false;
   }
 
+  /**
+   * @param path The path to check for
+   * @return <b>true</b> if the path part of the url ends with the specified path otherwise returns
+   *     <b>false</b>
+   */
   @Override
   public boolean endsWithPath(String path) {
     if (isEmpty(path)) return false;
     return endsWith(paths(), asPathsList(path));
   }
 
+  /**
+   * @param fragment The fragment to check for
+   * @return <b>true</b> if the fragment part of the url ends with the specified fragment otherwise
+   *     returns <b>false</b>
+   */
   @Override
   public boolean endsWithFragment(String fragment) {
     if (isEmpty(fragment)) return false;
@@ -90,12 +111,22 @@ public class StateHistoryToken implements HistoryToken {
         .allMatch(i -> targets.get(i).equals(paths.get(i + offset)));
   }
 
+  /**
+   * @param path The path to check for
+   * @return <b>true</b> if the path part of the url contains the specified path otherwise returns
+   *     <b>false</b>
+   */
   @Override
   public boolean containsPath(String path) {
     if (isEmpty(path)) return false;
     return contains(paths(), asPathsList(path));
   }
 
+  /**
+   * @param fragment The fragment to check for
+   * @return <b>true</b> if the fragment part of the url contains the specified fragment otherwise
+   *     returns <b>false</b>
+   */
   @Override
   public boolean containsFragment(String fragment) {
     if (isEmpty(fragment)) return false;
@@ -111,21 +142,35 @@ public class StateHistoryToken implements HistoryToken {
     return IntStream.of(0, subList.size() - 1).allMatch(i -> subList.get(i).equals(targets.get(i)));
   }
 
+  /**
+   * @return a list of Strings representing all paths of a url, e.g
+   *     <b>http://localhost:8080/a/b/c</b> will return a list contains <b>a</b>, <b>b</b>,
+   *     <b>c</b>,
+   */
   @Override
   public List<String> paths() {
     return paths;
   }
 
+  /**
+   * @return a list of Strings representing all fragments of a url, e.g
+   *     <b>http://localhost:8080/a/b/c#d/e/f</b> will return a list contains <b>d</b>, <b>d</b>,
+   *     <b>f</b>,
+   */
   @Override
   public List<String> fragments() {
     return fragments;
   }
 
+  /**
+   * @return the path part of a url, e.g <b>http://localhost:8080/a/b/c</b> will return <b>a/b/c</b>
+   */
   @Override
   public String path() {
     return String.join("/", paths());
   }
 
+  /** @return the string representing the whole query part of a token */
   @Override
   public String query() {
     return queryParameters.stream()
@@ -133,6 +178,11 @@ public class StateHistoryToken implements HistoryToken {
         .collect(Collectors.joining("&"));
   }
 
+  /**
+   * @param name name of the query parameter
+   * @return <b>True</b> if the token has a query param that has the specified name, otherwise
+   *     returns <b>false</b>.
+   */
   @Override
   public boolean hasQueryParameter(String name) {
     Optional<Parameter> param =
@@ -145,6 +195,7 @@ public class StateHistoryToken implements HistoryToken {
     }
   }
 
+  /** @return Key, value map of all query parameters of the token */
   @Override
   public Map<String, String> queryParameters() {
     Map<String, String> parameters = new HashMap<>();
@@ -152,6 +203,11 @@ public class StateHistoryToken implements HistoryToken {
     return parameters;
   }
 
+  /**
+   * @param name name of the query parameter
+   * @return The string value of the query param that has it name as <b>name</b> if found, if not
+   *     found it returns null.
+   */
   @Override
   public String getQueryParameter(String name) {
     Optional<Parameter> param =
@@ -164,6 +220,14 @@ public class StateHistoryToken implements HistoryToken {
     }
   }
 
+  /**
+   * Adds a query parameter with specified name and value to the current token, if a query parameter
+   * with same name already exists, then replaces its value with the new one
+   *
+   * @param name query parameter name
+   * @param value query parameter value
+   * @return {@link HistoryToken} that contains the new query parameter.
+   */
   @Override
   public HistoryToken setQueryParameter(String name, String value) {
     if (hasQueryParameter(name)) {
@@ -184,18 +248,37 @@ public class StateHistoryToken implements HistoryToken {
     }
   }
 
+  /**
+   * Appends a new path to the current token instance.
+   *
+   * @param path the path segment to be appended
+   * @return {@link HistoryToken} with appended specified path at the end.
+   */
   @Override
   public HistoryToken appendPath(String path) {
     paths.addAll(asPathsList(path));
     return this;
   }
 
+  /**
+   * Adds a fragment segment to the end of the fragments part
+   *
+   * @param fragment to be added
+   * @return {@link HistoryToken} with the new fragment segment appended to the end of fragment part
+   */
   @Override
   public HistoryToken appendFragment(String fragment) {
     fragments.addAll(asPathsList(fragment));
     return this;
   }
 
+  /**
+   * Appends a new query parameter to the end of the token query parameters part.
+   *
+   * @param name of the query parameter
+   * @param value of the query parameter
+   * @return {@link HistoryToken} with the new query parameter appended to the end of query part.
+   */
   @Override
   public HistoryToken appendParameter(String name, String value) {
     if (nonNull(name) && !name.trim().isEmpty()) {
@@ -204,6 +287,13 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Replaces the first occurrence of a path segment with the replacement
+   *
+   * @param path The path segment to be replaced
+   * @param replacement the new path segment
+   * @return {@link HistoryToken} with path segment replaced by the replacement
+   */
   @Override
   public HistoryToken replacePath(String path, String replacement) {
     List<String> paths = asPathsList(path());
@@ -216,6 +306,13 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Replaces the last occurrence of the specified with the replacement
+   *
+   * @param path the path segment to be replaced
+   * @param replacement the new path segment
+   * @return {@link HistoryToken} with last occurrence of path segment replaced by the replacement
+   */
   @Override
   public HistoryToken replaceLastPath(String path, String replacement) {
     List<String> paths = asPathsList(path());
@@ -228,12 +325,27 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Replace a full text part of a path with a the replacement
+   *
+   * @param path The path part to be replaced
+   * @param replacement The new path replacement
+   * @return {@link HistoryToken} with the text path replaced with the replacement.
+   */
   @Override
   public HistoryToken replacePaths(String path, String replacement) {
     this.paths = asPathsList(path().replace(path, replacement));
     return this;
   }
 
+  /**
+   * Replaces the last occurrence of a fragment segment with the specified replacement
+   *
+   * @param fragment to be replaced
+   * @param replacement the new replacement
+   * @return {@link HistoryToken} with last occurrence of specified fragment replaced with the
+   *     replacement
+   */
   @Override
   public HistoryToken replaceFragment(String fragment, String replacement) {
 
@@ -247,12 +359,29 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Replaces the whole specified fragment with a new fragment
+   *
+   * @param fragment to be replaced
+   * @param replacement the new replacement
+   * @return {@link HistoryToken} with the text of the fragment specified being replaced with the
+   *     replacement.
+   */
   @Override
   public HistoryToken replaceFragments(String fragment, String replacement) {
     this.fragments = asPathsList(fragment().replace(fragment, replacement));
     return this;
   }
 
+  /**
+   * Removes the query parameter with the specified name, and adds a new parameter
+   *
+   * @param name The name of the parameter to be removed
+   * @param replacementName The name of the new parameter
+   * @param replacementValue The value of the new parameter
+   * @return {@link HistoryToken} with removed parameter with the specified name and a new parameter
+   *     added.
+   */
   @Override
   public HistoryToken replaceParameter(
       String name, String replacementName, String replacementValue) {
@@ -265,6 +394,12 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Replaces the last path segment with a the replacement
+   *
+   * @param replacement The new replacement to replace the last path segment
+   * @return {@link HistoryToken} with last path segment replaced with the replacement
+   */
   @Override
   public HistoryToken replaceLastPath(String replacement) {
     if (!this.paths.isEmpty()) {
@@ -274,6 +409,11 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Removes the last path segment from the {@link HistoryToken}
+   *
+   * @return {@link HistoryToken} with last path segment removed.
+   */
   @Override
   public HistoryToken removeLastPath() {
     if (!this.paths.isEmpty()) {
@@ -282,6 +422,11 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Removes the last fragment segment from {@link HistoryToken}
+   *
+   * @return {@link HistoryToken} with last fragment segment removed.
+   */
   @Override
   public HistoryToken removeLastFragment() {
     if (!this.fragments.isEmpty()) {
@@ -290,6 +435,12 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Replaces the last fragment segment with the replacement
+   *
+   * @param replacement the fragment to be use as a replacement
+   * @return {@link HistoryToken} with last fragment replaced with the replacement
+   */
   @Override
   public HistoryToken replaceLastFragment(String replacement) {
     if (!this.fragments.isEmpty()) {
@@ -299,30 +450,59 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Replace the whole token path with the new path
+   *
+   * @param newPath the new path segment
+   * @return {@link HistoryToken} with its path part being replaced completely with the newPath
+   */
   @Override
   public HistoryToken replaceAllPaths(String newPath) {
     this.paths = asPathsList(newPath);
     return this;
   }
 
+  /**
+   * Replace the whole token fragment part with the newFragment
+   *
+   * @param newFragment the new fragment segment
+   * @return {@link HistoryToken} with whole fragment part replaced with the newFragment.
+   */
   @Override
   public HistoryToken replaceAllFragments(String newFragment) {
     this.fragments = asPathsList(newFragment);
     return this;
   }
 
+  /**
+   * Replaces the whole token query part with the newQuery
+   *
+   * @param newQuery the new query part
+   * @return {@link HistoryToken} with whole query part replaced with the newQuery.
+   */
   @Override
   public HistoryToken replaceQuery(String newQuery) {
     this.queryParameters = parsedParameters(newQuery);
     return this;
   }
 
+  /**
+   * removes the whole query part from the token
+   *
+   * @return {@link HistoryToken} without a query part
+   */
   @Override
   public HistoryToken clearQuery() {
     this.queryParameters.clear();
     return this;
   }
 
+  /**
+   * Removes the query parameter with the specified name
+   *
+   * @param name of the parameter to be removed
+   * @return {@link HistoryToken} with the query parameter with the specified name being removed
+   */
   @Override
   public HistoryToken removeParameter(String name) {
     Parameter parameter = getParameter(name);
@@ -332,30 +512,57 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /**
+   * Removes the whole path part of the {@link HistoryToken}
+   *
+   * @return {@link HistoryToken} without the path part.
+   */
   @Override
   public HistoryToken clearPaths() {
     this.paths.clear();
     return this;
   }
 
+  /**
+   * Removes the whole fragment part if the {@link HistoryToken}
+   *
+   * @return {@link HistoryToken} without the fragments part.
+   */
   @Override
   public HistoryToken clearFragments() {
     this.fragments.clear();
     return this;
   }
 
+  /**
+   * Removes all path segment that matches the specified path.
+   *
+   * @param path the path segment to be removed
+   * @return {@link HistoryToken} with out all path segments matching the path removed.
+   */
   @Override
   public HistoryToken removePath(String path) {
     this.paths.removeAll(asPathsList(path));
     return this;
   }
 
+  /**
+   * Removes all occurrences of a fragment segment from the token fragment part
+   *
+   * @param fragment segment to be removed
+   * @return {@link HistoryToken} with all fragment segment that matches the fragment removed.
+   */
   @Override
   public HistoryToken removeFragment(String fragment) {
     this.fragments.removeAll(asPathsList(fragment));
     return this;
   }
 
+  /**
+   * Clear all of token (path part, query part, fragment part)
+   *
+   * @return an empty {@link HistoryToken}
+   */
   @Override
   public HistoryToken clear() {
     clearPaths();
@@ -364,21 +571,31 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
+  /** @return the string representing the whole fragment part of a token */
   @Override
   public String fragment() {
     return String.join("/", fragments());
   }
 
+  /**
+   * @return <b>true</b> if all of token (path part, query part, fragments part) are empty,
+   *     otherwise return <b>false</b>.
+   */
   @Override
   public boolean isEmpty() {
     return paths.isEmpty() && queryParameters.isEmpty() && fragments.isEmpty();
   }
 
+  /** @return the full string representation of a {@link HistoryToken} */
   @Override
   public String value() {
     return path() + appendQuery(query()) + appendFragment();
   }
 
+  /**
+   * @return <b>true</b> if the token has expression parameters, expression parameters are segments
+   *     that starts with <b>:</b> or surrounded with <b>{}</b> .
+   */
   @Override
   public boolean hasVariables() {
     String tokenValue = value();

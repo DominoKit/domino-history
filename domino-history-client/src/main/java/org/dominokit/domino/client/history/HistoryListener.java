@@ -18,6 +18,10 @@ package org.dominokit.domino.client.history;
 import org.dominokit.domino.history.DominoHistory;
 import org.dominokit.domino.history.TokenFilter;
 
+/**
+ * This class is used by internal API to create listeners for url changes through static factory
+ * methods, the class only expose getters for internal memebers.
+ */
 public class HistoryListener {
   private final DominoHistory.StateListener listener;
 
@@ -38,14 +42,31 @@ public class HistoryListener {
     this.removeOnComplete = removeOnComplete;
   }
 
+  /**
+   * The actual listener that will be executed when the url matches the {@link TokenFilter} assigned
+   * to this HistoryListener instance.
+   *
+   * @return {@link DominoHistory.StateListener}
+   */
   public DominoHistory.StateListener getListener() {
     return listener;
   }
 
+  /**
+   * The token filter to apply the criteria to decide if the listener should be called for the url
+   * change.
+   *
+   * @return {@link TokenFilter}
+   */
   public TokenFilter getTokenFilter() {
     return tokenFilter;
   }
 
+  /**
+   * A flag to check if the listener should be removed after firing and on completion.
+   *
+   * @return boolean
+   */
   public boolean isRemoveOnComplete() {
     return removeOnComplete;
   }

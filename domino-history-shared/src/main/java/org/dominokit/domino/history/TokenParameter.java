@@ -15,6 +15,7 @@
  */
 package org.dominokit.domino.history;
 
+/** A POJO representing a query parameter in a {@link HistoryToken} */
 public class TokenParameter {
   private String name;
   private String value;

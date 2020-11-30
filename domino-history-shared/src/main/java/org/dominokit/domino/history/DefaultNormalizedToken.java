@@ -18,6 +18,9 @@ package org.dominokit.domino.history;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * An implementation of {@link NormalizedToken} to be used when history token cant be normalized.
+ */
 public class DefaultNormalizedToken implements NormalizedToken {
 
   private HistoryToken token = new StateHistoryToken("");
