@@ -5,7 +5,7 @@
     <parent>
         <artifactId>domino-history</artifactId>
         <groupId>org.dominokit</groupId>
-        <version>1.0-rc.4-SNAPSHOT</version>
+        <version>1.0.0-RC1</version>
     </parent>
     <packaging>gwt-lib</packaging>
     <modelVersion>4.0.0</modelVersion>
@@ -13,6 +13,7 @@
     <artifactId>domino-history-shared</artifactId>
 
     <name>domino-history-shared</name>
+    <description>Provides the shared api for domino-history different implementations</description>
     <url>https://github.com/DominoKit/domino-history</url>
 
     <build>

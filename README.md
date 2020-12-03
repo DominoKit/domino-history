@@ -8,14 +8,14 @@ A wrapper for browser history state API
 ```xml
 <dependency>
   <groupId>org.dominokit</groupId>
-  <artifactId>domino-history-gwt</artifactId>
-  <version>1.0-rc.4-SNAPSHOT</version>
+  <artifactId>domino-history-client</artifactId>
+  <version>1.0.0-RC1</version>
 </dependency>
 ```
 
 ### GWT inherits
 
-`<inherits name="org.dominokit.domino.gwt.history.History"/>`
+`<inherits name="org.dominokit.domino.client.history.History"/>`
 
 ### Usage
 
@@ -27,7 +27,7 @@ A wrapper for browser history state API
 
 3- Use `fireState(String token)` to change the window url and fire the events.
 
-4- Use `listen` with all it variants to start listing for url changes.
+4- Use `listen` with all its variants to start listing for url changes.
 
 5- Use `currentToken` to get the current active token in the browser window url.
 
