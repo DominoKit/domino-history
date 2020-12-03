@@ -543,7 +543,7 @@ public class StateHistory implements AppHistory {
    * Reapply the current token and browser url and force calling all listeners with matching token
    * filters. and use a new page title.
    *
-   * @param title
+   * @param title The page title
    */
   @Override
   public void fireCurrentStateHistory(String title) {
