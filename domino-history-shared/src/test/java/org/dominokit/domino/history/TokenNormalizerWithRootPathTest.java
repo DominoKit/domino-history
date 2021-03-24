@@ -19,41 +19,42 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-public class TokenNormalizerTest {
+public class TokenNormalizerWithRootPathTest {
 
   public static final String SAMPLE_TOKEN =
       "path1/path2/path3?param1=value1&param2=value2&param3=value3#fragment1/fragment2/fragment3";
-  public static final String SAMPLE_MULTI_VALUE_QUERY_TOKEN =
-      "path1/path2/path3?param1=value1&param1=value21&param2=value2#fragment1/fragment2/fragment3";
+  public static final String ROOT_PATH = "app/ui";
 
   @Test
   public void givenEmptyTargetToken_thenShouldReturnOriginalToken() {
-    assertThat(TokenNormalizer.normalize(SAMPLE_TOKEN, null).getToken())
-        .isEqualTo(new StateHistoryToken(SAMPLE_TOKEN));
-    assertThat(TokenNormalizer.normalize(SAMPLE_TOKEN, "").getToken())
-        .isEqualTo(new StateHistoryToken(SAMPLE_TOKEN));
-    assertThat(TokenNormalizer.normalize(SAMPLE_TOKEN, "  ").getToken())
-        .isEqualTo(new StateHistoryToken(SAMPLE_TOKEN));
+    assertThat(TokenNormalizer.normalize(ROOT_PATH, SAMPLE_TOKEN, null).getToken())
+        .isEqualTo(new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN));
+    assertThat(TokenNormalizer.normalize(ROOT_PATH, SAMPLE_TOKEN, "").getToken())
+        .isEqualTo(new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN));
+    assertThat(TokenNormalizer.normalize(ROOT_PATH, SAMPLE_TOKEN, "  ").getToken())
+        .isEqualTo(new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN));
   }
 
   @Test
   public void givenNoParameterTargetToken_thenShouldReturnOriginalToken() {
-    NormalizedToken normalized = TokenNormalizer.normalize(SAMPLE_TOKEN, SAMPLE_TOKEN);
-    assertThat(normalized.getToken()).isEqualTo(new StateHistoryToken(SAMPLE_TOKEN));
+    NormalizedToken normalized = TokenNormalizer.normalize(ROOT_PATH, SAMPLE_TOKEN, SAMPLE_TOKEN);
+    assertThat(normalized.getToken()).isEqualTo(new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN));
   }
 
   @Test
   public void givenPathParameterTargetToken_thenShouldReturnSubstituteToken() {
-    NormalizedToken normalized = TokenNormalizer.normalize(SAMPLE_TOKEN, "path1/:pathParam/path3");
+    NormalizedToken normalized =
+        TokenNormalizer.normalize(ROOT_PATH, SAMPLE_TOKEN, "path1/:pathParam/path3");
     assertThat(normalized.getToken())
-        .isEqualTo(new StateHistoryToken(SAMPLE_TOKEN.replace("path2", ":pathParam")));
+        .isEqualTo(new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN.replace("path2", ":pathParam")));
     assertThat(normalized.getPathParameters().size()).isEqualTo(1);
     assertThat(normalized.getPathParameter("pathParam")).isEqualTo("path2");
 
-    normalized = TokenNormalizer.normalize(SAMPLE_TOKEN, "path1/:pathParam/:pathParam2");
+    normalized = TokenNormalizer.normalize(ROOT_PATH, SAMPLE_TOKEN, "path1/:pathParam/:pathParam2");
     assertThat(normalized.getToken())
         .isEqualTo(
             new StateHistoryToken(
+                ROOT_PATH,
                 SAMPLE_TOKEN.replace("path2", ":pathParam").replace("path3", ":pathParam2")));
 
     assertThat(normalized.getPathParameters().size()).isEqualTo(2);
@@ -65,41 +66,24 @@ public class TokenNormalizerTest {
   public void givenQueryParameterTargetToken_thenShouldReturnSubstituteToken() {
     NormalizedToken normalized =
         TokenNormalizer.normalize(
-            SAMPLE_TOKEN, "path1/path2/path3?param1=:value1param&param2=value2&param3=value3");
+            ROOT_PATH,
+            SAMPLE_TOKEN,
+            "path1/path2/path3?param1=:value1param&param2=value2&param3=value3");
     assertThat(normalized.getToken())
-        .isEqualTo(new StateHistoryToken(SAMPLE_TOKEN.replace("value1", ":value1param")));
+        .isEqualTo(
+            new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN.replace("value1", ":value1param")));
     assertThat(normalized.getPathParameters()).isEmpty();
 
     normalized =
         TokenNormalizer.normalize(
+            ROOT_PATH,
             SAMPLE_TOKEN,
             "path1/path2/path3?param1=:value1param&param2=:value2param&param3=value3");
     assertThat(normalized.getToken())
         .isEqualTo(
             new StateHistoryToken(
+                ROOT_PATH,
                 SAMPLE_TOKEN.replace("value1", ":value1param").replace("value2", ":value2param")));
-    assertThat(normalized.getPathParameters()).isEmpty();
-  }
-
-  @Test
-  public void givenQueryParameterWithMultiValueTargetToken_thenShouldReturnSubstituteToken() {
-    NormalizedToken normalized =
-        TokenNormalizer.normalize(
-            SAMPLE_MULTI_VALUE_QUERY_TOKEN,
-            "path1/path2/path3?param1=:value1param&param1=:value2param&param2=value2");
-    StateHistoryToken expected =
-        new StateHistoryToken(
-            SAMPLE_MULTI_VALUE_QUERY_TOKEN
-                .replace("value1", ":value1param")
-                .replace("value21", ":value2param"));
-    assertThat(normalized.getToken()).isEqualTo(expected);
-    assertThat(normalized.getPathParameters()).isEmpty();
-
-    normalized =
-        TokenNormalizer.normalize(
-            SAMPLE_MULTI_VALUE_QUERY_TOKEN,
-            "path1/path2/path3?param1=:value1param&param1=:value2param&param2=value2");
-    assertThat(normalized.getToken()).isEqualTo(expected);
     assertThat(normalized.getPathParameters()).isEmpty();
   }
 
@@ -107,21 +91,25 @@ public class TokenNormalizerTest {
   public void givenFragmentTargetToken_thenShouldReturnSubstituteToken() {
     NormalizedToken normalized =
         TokenNormalizer.normalize(
+            ROOT_PATH,
             SAMPLE_TOKEN,
             "path1/path2/path3?param1=value1&param2=value2&param3=value3#:fragment1param");
     assertThat(normalized.getToken())
-        .isEqualTo(new StateHistoryToken(SAMPLE_TOKEN.replace("fragment1", ":fragment1param")));
+        .isEqualTo(
+            new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN.replace("fragment1", ":fragment1param")));
     assertThat(normalized.getPathParameters()).isEmpty();
     assertThat(normalized.getFragmentParameters().size()).isEqualTo(1);
     assertThat(normalized.getFragmentParameter("fragment1param")).isEqualTo("fragment1");
 
     normalized =
         TokenNormalizer.normalize(
+            ROOT_PATH,
             SAMPLE_TOKEN,
             "path1/path2/path3?param1=value1&param2=value2&param3=value3#:fragment1param/:fragment2param/fragment3");
     assertThat(normalized.getToken())
         .isEqualTo(
             new StateHistoryToken(
+                ROOT_PATH,
                 SAMPLE_TOKEN
                     .replace("fragment1", ":fragment1param")
                     .replace("fragment2", ":fragment2param")));
@@ -135,10 +123,12 @@ public class TokenNormalizerTest {
   public void testNormalizeEnd() {
     NormalizedToken normalized =
         TokenNormalizer.normalizeTail(
+            ROOT_PATH,
             SAMPLE_TOKEN,
             ":path3param?param1=value1&param2=value2&param3=value3#fragment1/fragment2/:fragment3param");
     StateHistoryToken expected =
         new StateHistoryToken(
+            ROOT_PATH,
             SAMPLE_TOKEN.replace("path3", ":path3param").replace("fragment3", ":fragment3param"));
 
     assertThat(normalized.getPathParameters().size()).isEqualTo(1);
@@ -153,14 +143,13 @@ public class TokenNormalizerTest {
   public void testNormalizeEndNoPath() {
     NormalizedToken normalized =
         TokenNormalizer.normalizeTail(
+            ROOT_PATH,
             SAMPLE_TOKEN,
             "?param1=value1&param2=value2&param3=:value3param#fragment1/fragment2/:fragment3param");
     StateHistoryToken expected =
         new StateHistoryToken(
+            ROOT_PATH,
             SAMPLE_TOKEN.replace("value3", ":value3param").replace("fragment3", ":fragment3param"));
-
-    System.out.println(normalized.getToken().value());
-    System.out.println(expected.value());
 
     assertThat(normalized.getPathParameters()).isEmpty();
     assertThat(normalized.getFragmentParameters().size()).isEqualTo(1);
@@ -171,11 +160,12 @@ public class TokenNormalizerTest {
 
   @Test
   public void testNormalizeTokenStartingFromTailWithDuplicatePaths() {
-    HistoryToken historyToken = new StateHistoryToken(SAMPLE_TOKEN);
+    HistoryToken historyToken = new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN);
     historyToken.appendPath("path3").clearFragments().clearQuery();
 
     NormalizedToken normalized =
-        TokenNormalizer.normalizePathTail(historyToken.value(), "path1/path2/:pathx/:pathy");
+        TokenNormalizer.normalizePathTail(
+            ROOT_PATH, historyToken.value(), "path1/path2/:pathx/:pathy");
     StateHistoryToken expected = new StateHistoryToken("path1/path2/:pathx/:pathy");
 
     assertThat(normalized.getToken()).isEqualTo(expected);
@@ -183,11 +173,12 @@ public class TokenNormalizerTest {
 
   @Test
   public void testNormalizeTokenStartingFromHeadWithDuplicatePaths() {
-    HistoryToken historyToken = new StateHistoryToken(SAMPLE_TOKEN);
+    HistoryToken historyToken = new StateHistoryToken(ROOT_PATH, SAMPLE_TOKEN);
     historyToken.appendPath("path3").clearFragments().clearQuery();
 
     NormalizedToken normalized =
-        TokenNormalizer.normalizePaths(historyToken.value(), "path1/path2/:pathx/:pathy");
+        TokenNormalizer.normalizePaths(
+            ROOT_PATH, historyToken.value(), "path1/path2/:pathx/:pathy");
     StateHistoryToken expected = new StateHistoryToken("path1/path2/:pathx/:pathy");
 
     assertThat(normalized.getToken()).isEqualTo(expected);

@@ -29,11 +29,22 @@ public class TokenNormalizer {
    * @return {@link DefaultNormalizedToken}
    */
   public static DefaultNormalizedToken normalize(String original, String target) {
-    if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
+    return normalize("", original, target);
+  }
 
-    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken();
-    StateHistoryToken originalToken = new StateHistoryToken(original);
-    StateHistoryToken targetToken = new StateHistoryToken(target);
+  /**
+   * @param rootPath the token root path.
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link DefaultNormalizedToken}
+   */
+  public static DefaultNormalizedToken normalize(String rootPath, String original, String target) {
+    if (validateToken(target))
+      return new DefaultNormalizedToken(new StateHistoryToken(rootPath, original));
+
+    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken(rootPath, "");
+    StateHistoryToken originalToken = new StateHistoryToken(rootPath, original);
+    StateHistoryToken targetToken = new StateHistoryToken(rootPath, target);
 
     normalizePaths(normalizedToken, originalToken, targetToken);
     normalizeParameters(originalToken, targetToken);
@@ -114,19 +125,17 @@ public class TokenNormalizer {
 
   private static void normalizeParameters(
       StateHistoryToken originalToken, StateHistoryToken targetToken) {
-    Map<String, String> originalParameters = originalToken.queryParameters();
-    Map<String, String> targetParameters = targetToken.queryParameters();
+    Map<String, List<String>> originalParameters = originalToken.queryParameters();
+    Map<String, List<String>> targetParameters = targetToken.queryParameters();
 
-    targetParameters
-        .entrySet()
-        .forEach(
-            entrySet -> {
-              if (entrySet.getValue().startsWith(":")
-                  && originalParameters.containsKey(entrySet.getKey())) {
-                originalToken.replaceParameter(
-                    entrySet.getKey(), entrySet.getKey(), entrySet.getValue());
-              }
-            });
+    targetParameters.forEach(
+        (key, values) ->
+            values.forEach(
+                value -> {
+                  if (value.startsWith(":") && originalParameters.containsKey(key)) {
+                    originalToken.replaceParameter(key, key, values);
+                  }
+                }));
   }
 
   private static void normalizeFragments(
@@ -191,11 +200,23 @@ public class TokenNormalizer {
    * @return {@link NormalizedToken}
    */
   public static NormalizedToken normalizeTail(String original, String target) {
-    if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
+    return normalizeTail("", original, target);
+  }
+  /**
+   * Normalize the tail of the specified tokens
+   *
+   * @param rootPath the token rootPath
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
+  public static NormalizedToken normalizeTail(String rootPath, String original, String target) {
+    if (validateToken(target))
+      return new DefaultNormalizedToken(new StateHistoryToken(rootPath, original));
 
-    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken();
-    StateHistoryToken originalToken = new StateHistoryToken(original);
-    StateHistoryToken targetToken = new StateHistoryToken(target);
+    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken(rootPath, "");
+    StateHistoryToken originalToken = new StateHistoryToken(rootPath, original);
+    StateHistoryToken targetToken = new StateHistoryToken(rootPath, target);
 
     normalizePathsTail(normalizedToken, originalToken, targetToken);
     normalizeParameters(originalToken, targetToken);
@@ -219,11 +240,24 @@ public class TokenNormalizer {
    * @return {@link NormalizedToken}
    */
   public static NormalizedToken normalizeFragmentsTail(String original, String target) {
-    if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
+    return normalizeFragmentsTail("", original, target);
+  }
+  /**
+   * Normalize the tail of the specified tokens fragment parts
+   *
+   * @param rootPath the token root path
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
+  public static NormalizedToken normalizeFragmentsTail(
+      String rootPath, String original, String target) {
+    if (validateToken(target))
+      return new DefaultNormalizedToken(new StateHistoryToken(rootPath, original));
 
-    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken();
-    StateHistoryToken originalToken = new StateHistoryToken(original);
-    StateHistoryToken targetToken = new StateHistoryToken(target);
+    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken(rootPath, "");
+    StateHistoryToken originalToken = new StateHistoryToken(rootPath, original);
+    StateHistoryToken targetToken = new StateHistoryToken(rootPath, target);
 
     normalizeFragmentsTail(normalizedToken, originalToken, targetToken);
 
@@ -231,6 +265,7 @@ public class TokenNormalizer {
 
     return normalizedToken;
   }
+
   /**
    * Normalize the tail of the specified tokens path part
    *
@@ -239,11 +274,24 @@ public class TokenNormalizer {
    * @return {@link NormalizedToken}
    */
   public static NormalizedToken normalizePathTail(String original, String target) {
-    if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
+    return normalizePathTail("", original, target);
+  }
 
-    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken();
-    StateHistoryToken originalToken = new StateHistoryToken(original);
-    StateHistoryToken targetToken = new StateHistoryToken(target);
+  /**
+   * Normalize the tail of the specified tokens path part
+   *
+   * @param rootPath the token root path
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
+  public static NormalizedToken normalizePathTail(String rootPath, String original, String target) {
+    if (validateToken(target))
+      return new DefaultNormalizedToken(new StateHistoryToken(rootPath, original));
+
+    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken(rootPath, "");
+    StateHistoryToken originalToken = new StateHistoryToken(rootPath, original);
+    StateHistoryToken targetToken = new StateHistoryToken(rootPath, target);
 
     normalizePathsTail(normalizedToken, originalToken, targetToken);
 
@@ -260,11 +308,24 @@ public class TokenNormalizer {
    * @return {@link NormalizedToken}
    */
   public static DefaultNormalizedToken normalizePaths(String original, String target) {
-    if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
+    return normalizePaths("", original, target);
+  }
+  /**
+   * Normalize the tail of the specified tokens paths
+   *
+   * @param rootPath the token root path
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
+  public static DefaultNormalizedToken normalizePaths(
+      String rootPath, String original, String target) {
+    if (validateToken(target))
+      return new DefaultNormalizedToken(new StateHistoryToken(rootPath, original));
 
-    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken();
-    StateHistoryToken originalToken = new StateHistoryToken(original);
-    StateHistoryToken targetToken = new StateHistoryToken(target);
+    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken(rootPath, "");
+    StateHistoryToken originalToken = new StateHistoryToken(rootPath, original);
+    StateHistoryToken targetToken = new StateHistoryToken(rootPath, target);
 
     normalizePaths(normalizedToken, originalToken, targetToken);
 
@@ -272,6 +333,7 @@ public class TokenNormalizer {
 
     return normalizedToken;
   }
+
   /**
    * Normalize the tail of the specified tokens fragments
    *
@@ -280,11 +342,25 @@ public class TokenNormalizer {
    * @return {@link NormalizedToken}
    */
   public static DefaultNormalizedToken normalizeFragments(String original, String target) {
-    if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
+    return normalizeFragments("", original, target);
+  }
 
-    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken();
-    StateHistoryToken originalToken = new StateHistoryToken(original);
-    StateHistoryToken targetToken = new StateHistoryToken(target);
+  /**
+   * Normalize the tail of the specified tokens fragments
+   *
+   * @param rootPath the token root path
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
+  public static DefaultNormalizedToken normalizeFragments(
+      String rootPath, String original, String target) {
+    if (validateToken(target))
+      return new DefaultNormalizedToken(new StateHistoryToken(rootPath, original));
+
+    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken(rootPath, "");
+    StateHistoryToken originalToken = new StateHistoryToken(rootPath, original);
+    StateHistoryToken targetToken = new StateHistoryToken(rootPath, target);
 
     normalizeFragments(normalizedToken, originalToken, targetToken);
 
@@ -301,11 +377,25 @@ public class TokenNormalizer {
    * @return {@link NormalizedToken}
    */
   public static DefaultNormalizedToken normalizeParameters(String original, String target) {
-    if (validateToken(target)) return new DefaultNormalizedToken(new StateHistoryToken(original));
+    return normalizeParameters("", original, target);
+  }
 
-    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken();
-    StateHistoryToken originalToken = new StateHistoryToken(original);
-    StateHistoryToken targetToken = new StateHistoryToken(target);
+  /**
+   * Normalize the tail of the specified tokens parameters
+   *
+   * @param rootPath the token root path
+   * @param original the token with expression parameters
+   * @param target the token with constant value
+   * @return {@link NormalizedToken}
+   */
+  public static DefaultNormalizedToken normalizeParameters(
+      String rootPath, String original, String target) {
+    if (validateToken(target))
+      return new DefaultNormalizedToken(new StateHistoryToken(rootPath, original));
+
+    DefaultNormalizedToken normalizedToken = new DefaultNormalizedToken(rootPath, "");
+    StateHistoryToken originalToken = new StateHistoryToken(rootPath, original);
+    StateHistoryToken targetToken = new StateHistoryToken(rootPath, target);
 
     normalizeParameters(originalToken, targetToken);
 

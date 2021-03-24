@@ -46,12 +46,14 @@ public class DominoDirectState implements DirectState {
 
   @Override
   public void onDirectUrl(TokenFilter tokenFilter) {
-    NormalizedToken normalized = tokenFilter.normalizeToken(state.token().value());
+    NormalizedToken normalized =
+        tokenFilter.normalizeToken(state.rootPath(), state.token().value());
     if (isNull(normalized)) {
       normalized = new DefaultNormalizedToken(state.token());
     }
     state.setNormalizedToken(normalized);
-    if (tokenFilter.filter(new StateHistoryToken(normalized.getToken().value()))) {
+    if (tokenFilter.filter(
+        new StateHistoryToken(state.rootPath(), normalized.getToken().value()))) {
       listener.onPopState(state);
       onCompleted.accept(this);
     }

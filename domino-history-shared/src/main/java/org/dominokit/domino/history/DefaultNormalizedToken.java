@@ -37,6 +37,10 @@ public class DefaultNormalizedToken implements NormalizedToken {
     this.token = new StateHistoryToken(token);
   }
 
+  public DefaultNormalizedToken(String rootPath, String token) {
+    this.token = new StateHistoryToken(rootPath, token);
+  }
+
   @Override
   public HistoryToken getToken() {
     return token;
