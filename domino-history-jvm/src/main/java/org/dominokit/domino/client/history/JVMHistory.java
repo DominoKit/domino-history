@@ -29,6 +29,15 @@ public class JVMHistory implements AppHistory {
   private Set<HistoryListener> listeners = new HashSet<>();
   private Deque<HistoryState> forwards = new LinkedList<>();
   private Deque<HistoryState> backwards = new LinkedList<>();
+  private final String rootPath;
+
+  public JVMHistory() {
+    this("");
+  }
+
+  public JVMHistory(String rootPath) {
+    this.rootPath = isNull(rootPath) ? "" : rootPath.trim();
+  }
 
   /**
    * Create a listener that will listen for any change in the virtual url.
@@ -103,33 +112,45 @@ public class JVMHistory implements AppHistory {
   }
 
   private void inform(HistoryState state) {
+    if (!isSameRoot(state.token)) {
+      return;
+    }
+
     List<HistoryListener> completedListeners = new ArrayList<>();
     listeners.stream()
         .filter(
-            l -> {
-              NormalizedToken normalized = getNormalizedToken(state.token, l);
+            listener -> {
+              NormalizedToken normalized = getNormalizedToken(rootPath, state.token, listener);
               if (isNull(normalized)) {
                 normalized = new DefaultNormalizedToken(state.token);
               }
-              return l.tokenFilter.filter(
+              return listener.tokenFilter.filter(
                   new JVMState(new HistoryState(normalized.getToken().value(), "")).token());
             })
         .forEach(
-            l -> {
-              if (l.isRemoveOnComplete()) {
-                completedListeners.add(l);
+            listener -> {
+              if (listener.isRemoveOnComplete()) {
+                completedListeners.add(listener);
               }
 
-              NormalizedToken normalized = getNormalizedToken(state.token, l);
-              l.listener.onPopState(
+              NormalizedToken normalized = getNormalizedToken(rootPath, state.token, listener);
+              listener.listener.onPopState(
                   new JVMState(normalized, new HistoryState(normalized.getToken().value(), "")));
             });
 
     listeners.removeAll(completedListeners);
   }
 
-  private NormalizedToken getNormalizedToken(String token, HistoryListener listener) {
-    return listener.tokenFilter.normalizeToken(token);
+  private boolean isSameRoot(String token) {
+    if (this.rootPath.isEmpty()) {
+      return true;
+    }
+    return token.startsWith(rootPath);
+  }
+
+  private NormalizedToken getNormalizedToken(
+      String rootPath, String token, HistoryListener listener) {
+    return listener.tokenFilter.normalizeToken(rootPath, token);
   }
 
   /** Go back one step simulating a back button */
@@ -466,6 +487,12 @@ public class JVMHistory implements AppHistory {
     return new StateHistoryToken(forwards.peek().token);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public String getRootPath() {
+    return this.rootPath;
+  }
+
   /**
    * Reapply the current token and virtual url and force calling all listeners with matching token
    * filters.
@@ -550,6 +577,11 @@ public class JVMHistory implements AppHistory {
     private JVMState(NormalizedToken normalizedToken, HistoryState historyState) {
       this.normalizedToken = normalizedToken;
       this.historyState = historyState;
+    }
+
+    @Override
+    public String rootPath() {
+      return JVMHistory.this.rootPath;
     }
 
     @Override

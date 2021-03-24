@@ -28,15 +28,34 @@ public class StateHistoryToken implements HistoryToken {
 
   private static final String QUERY_REGEX = "\\?";
   private static final String FRAGMENT_REGEX = "\\#";
+  private final String rootPath;
   private List<String> paths = new LinkedList<>();
   private List<Parameter> queryParameters = new LinkedList<>();
   private List<String> fragments = new LinkedList<>();
 
+  /** @param token String, a URL token */
   public StateHistoryToken(String token) {
+    this("", token);
+  }
+
+  /**
+   * @param rootPath String, the root path token
+   * @param token String, a URL token
+   */
+  public StateHistoryToken(String rootPath, String token) {
     if (isNull(token)) throw new TokenCannotBeNullException();
-    this.paths.addAll(asPathsList(token));
-    this.queryParameters.addAll(asQueryParameters(token));
-    this.fragments.addAll(parseFragments(token));
+    this.rootPath = isNull(rootPath) ? "" : rootPath.trim();
+    String rebasedToken = rebaseToken(rootPath, token);
+    this.paths.addAll(asPathsList(rebasedToken));
+    this.queryParameters.addAll(asQueryParameters(rebasedToken));
+    this.fragments.addAll(parseFragments(rebasedToken));
+  }
+
+  private String rebaseToken(String rootPath, String token) {
+    if (isNull(rootPath) || rootPath.trim().isEmpty() || !token.startsWith(rootPath)) {
+      return token;
+    }
+    return token.substring(rootPath.length());
   }
 
   private String getPathToRoot(String token, String root) {
@@ -173,9 +192,7 @@ public class StateHistoryToken implements HistoryToken {
   /** @return the string representing the whole query part of a token */
   @Override
   public String query() {
-    return queryParameters.stream()
-        .map(parameter -> parameter.key + "=" + parameter.value)
-        .collect(Collectors.joining("&"));
+    return queryParameters.stream().map(Parameter::asQueryString).collect(Collectors.joining("&"));
   }
 
   /**
@@ -197,8 +214,8 @@ public class StateHistoryToken implements HistoryToken {
 
   /** @return Key, value map of all query parameters of the token */
   @Override
-  public Map<String, String> queryParameters() {
-    Map<String, String> parameters = new HashMap<>();
+  public Map<String, List<String>> queryParameters() {
+    Map<String, List<String>> parameters = new HashMap<>();
     queryParameters.forEach(parameter -> parameters.put(parameter.key, parameter.value));
     return parameters;
   }
@@ -209,7 +226,7 @@ public class StateHistoryToken implements HistoryToken {
    *     found it returns null.
    */
   @Override
-  public String getQueryParameter(String name) {
+  public List<String> getQueryParameter(String name) {
     Optional<Parameter> param =
         queryParameters.stream().filter(parameter -> parameter.key.equals(name)).findFirst();
 
@@ -235,6 +252,26 @@ public class StateHistoryToken implements HistoryToken {
     }
     appendParameter(name, value);
     return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public HistoryToken setQueryParameter(String name, List<String> values) {
+    if (hasQueryParameter(name)) {
+      removeParameter(name);
+    }
+    appendParameter(name, values);
+    return this;
+  }
+
+  @Override
+  public HistoryToken addQueryParameter(String name, String value) {
+    return appendParameter(name, value);
+  }
+
+  @Override
+  public HistoryToken addQueryParameters(String name, List<String> values) {
+    return appendParameter(name, values);
   }
 
   private Parameter getParameter(String name) {
@@ -281,8 +318,18 @@ public class StateHistoryToken implements HistoryToken {
    */
   @Override
   public HistoryToken appendParameter(String name, String value) {
+    return appendParameter(name, asList(value));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public HistoryToken appendParameter(String name, List<String> values) {
     if (nonNull(name) && !name.trim().isEmpty()) {
-      this.queryParameters.add(new Parameter(name, value));
+      if (hasQueryParameter(name)) {
+        getParameter(name).addValues(values);
+      } else {
+        this.queryParameters.add(new Parameter(name, values));
+      }
     }
     return this;
   }
@@ -373,18 +420,17 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
-  /**
-   * Removes the query parameter with the specified name, and adds a new parameter
-   *
-   * @param name The name of the parameter to be removed
-   * @param replacementName The name of the new parameter
-   * @param replacementValue The value of the new parameter
-   * @return {@link HistoryToken} with removed parameter with the specified name and a new parameter
-   *     added.
-   */
+  /** {@inheritDoc} */
   @Override
   public HistoryToken replaceParameter(
       String name, String replacementName, String replacementValue) {
+    return replaceParameter(name, replacementName, asList(replacementValue));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public HistoryToken replaceParameter(
+      String name, String replacementName, List<String> replacementValue) {
     if (hasQueryParameter(name)) {
       Parameter param = getParameter(name);
       this.queryParameters.add(
@@ -392,6 +438,12 @@ public class StateHistoryToken implements HistoryToken {
       this.queryParameters.remove(param);
     }
     return this;
+  }
+
+  private List<String> asList(String value) {
+    List<String> values = new ArrayList<>();
+    values.add(value);
+    return values;
   }
 
   /**
@@ -589,6 +641,20 @@ public class StateHistoryToken implements HistoryToken {
   /** @return the full string representation of a {@link HistoryToken} */
   @Override
   public String value() {
+    String path = path();
+    String separator =
+        (getRootPath().isEmpty()
+                || getRootPath().endsWith("/")
+                || path.startsWith("/")
+                || path.isEmpty())
+            ? ""
+            : "/";
+    return getRootPath() + separator + noRootValue();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String noRootValue() {
     return path() + appendQuery(query()) + appendFragment();
   }
 
@@ -644,9 +710,15 @@ public class StateHistoryToken implements HistoryToken {
   }
 
   private List<Parameter> parsedParameters(String queryString) {
-    return Stream.of(queryString.split("&"))
-        .map(part -> part.split("="))
-        .map(keyValue -> new Parameter(keyValue[0], keyValue[1]))
+
+    return Stream.of(queryString.split("&")).map(part -> part.split("="))
+        .collect(
+            Collectors.groupingBy(
+                keyValue -> keyValue[0],
+                LinkedHashMap::new,
+                Collectors.mapping(keyValue -> keyValue[1], Collectors.toList())))
+        .entrySet().stream()
+        .map(entry -> new Parameter(entry.getKey(), entry.getValue()))
         .collect(Collectors.toCollection(LinkedList::new));
   }
 
@@ -674,6 +746,11 @@ public class StateHistoryToken implements HistoryToken {
   }
 
   @Override
+  public String getRootPath() {
+    return rootPath;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof StateHistoryToken)) return false;
@@ -681,7 +758,8 @@ public class StateHistoryToken implements HistoryToken {
 
     return paths.equals(that.paths)
         && fragments.equals(that.fragments)
-        && queryParameters.equals(that.queryParameters);
+        && queryParameters.size() == that.queryParameters.size()
+        && queryParameters.containsAll(that.queryParameters);
   }
 
   @Override
@@ -691,11 +769,20 @@ public class StateHistoryToken implements HistoryToken {
 
   private static class Parameter {
     private String key;
-    private String value;
+    private List<String> value;
 
-    public Parameter(String key, String value) {
+    public Parameter(String key, List<String> value) {
       this.key = key;
       this.value = value;
+    }
+
+    private void addValues(List<String> moreValues) {
+      value.addAll(moreValues);
+    }
+
+    private void replaceValues(List<String> newValues) {
+      value.clear();
+      value.addAll(newValues);
     }
 
     @Override
@@ -703,12 +790,18 @@ public class StateHistoryToken implements HistoryToken {
       if (this == o) return true;
       if (!(o instanceof Parameter)) return false;
       Parameter parameter = (Parameter) o;
-      return Objects.equals(key, parameter.key) && Objects.equals(value, parameter.value);
+      return Objects.equals(key, parameter.key)
+          && value.size() == parameter.value.size()
+          && value.containsAll(parameter.value);
     }
 
     @Override
     public int hashCode() {
       return Objects.hash(key, value);
+    }
+
+    private String asQueryString() {
+      return value.stream().map(value -> key + "=" + value).collect(Collectors.joining("&"));
     }
   }
 }

@@ -315,6 +315,13 @@ public interface DominoHistory {
    */
   HistoryToken currentToken();
 
+  /**
+   * The root path assigned with the history instance
+   *
+   * @return String
+   */
+  String getRootPath();
+
   /** A functional interface to define a listener to be called when url state is changed. */
   interface StateListener {
     /**
@@ -327,6 +334,9 @@ public interface DominoHistory {
 
   /** The url state */
   interface State {
+    /** @return String, the token root path */
+    String rootPath();
+
     /**
      * The parsed token of the url
      *

@@ -26,6 +26,15 @@ public class TestDominoHistory implements AppHistory {
   private Set<HistoryListener> listeners = new HashSet<>();
   private Deque<HistoryState> forwards = new LinkedList<>();
   private Deque<HistoryState> backwards = new LinkedList<>();
+  private final String rootPath;
+
+  public TestDominoHistory() {
+    this("");
+  }
+
+  public TestDominoHistory(String rootPath) {
+    this.rootPath = isNull(rootPath) ? "" : rootPath.trim();
+  }
 
   @Override
   public DirectState listen(StateListener listener) {
@@ -64,25 +73,28 @@ public class TestDominoHistory implements AppHistory {
   }
 
   private void inform(HistoryState state) {
+    if (!isSameRoot(state.token)) {
+      return;
+    }
     List<HistoryListener> completedListeners = new ArrayList<>();
     listeners.stream()
         .filter(
             l -> {
-              NormalizedToken normalized = getNormalizedToken(state.token, l);
+              NormalizedToken normalized = getNormalizedToken(rootPath, state.token, l);
               if (isNull(normalized)) {
-                normalized = new DefaultNormalizedToken(state.token);
+                normalized = new DefaultNormalizedToken(rootPath, state.token);
               }
               return l.tokenFilter.filter(
                   new TestState(new HistoryState(normalized.getToken().value(), "test")).token());
             })
         .forEach(
-            l -> {
-              if (l.isRemoveOnComplete()) {
-                completedListeners.add(l);
+            listener -> {
+              if (listener.isRemoveOnComplete()) {
+                completedListeners.add(listener);
               }
 
-              NormalizedToken normalized = getNormalizedToken(state.token, l);
-              l.listener.onPopState(
+              NormalizedToken normalized = getNormalizedToken(rootPath, state.token, listener);
+              listener.listener.onPopState(
                   new TestState(
                       normalized, new HistoryState(normalized.getToken().value(), "test")));
             });
@@ -90,8 +102,16 @@ public class TestDominoHistory implements AppHistory {
     listeners.removeAll(completedListeners);
   }
 
-  private NormalizedToken getNormalizedToken(String token, HistoryListener listener) {
-    return listener.tokenFilter.normalizeToken(token);
+  private boolean isSameRoot(String token) {
+    if (this.rootPath.isEmpty()) {
+      return true;
+    }
+    return token.startsWith(rootPath);
+  }
+
+  private NormalizedToken getNormalizedToken(
+      String rootPath, String token, HistoryListener listener) {
+    return listener.tokenFilter.normalizeToken(rootPath, token);
   }
 
   @Override
@@ -238,6 +258,12 @@ public class TestDominoHistory implements AppHistory {
     return new StateHistoryToken(forwards.peek().token);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public String getRootPath() {
+    return this.rootPath;
+  }
+
   @Override
   public void fireCurrentStateHistory() {
     if (!forwards.isEmpty()) inform(forwards.peek());
@@ -312,6 +338,11 @@ public class TestDominoHistory implements AppHistory {
     private TestState(NormalizedToken normalizedToken, HistoryState historyState) {
       this.normalizedToken = normalizedToken;
       this.historyState = historyState;
+    }
+
+    @Override
+    public String rootPath() {
+      return TestDominoHistory.this.rootPath;
     }
 
     @Override

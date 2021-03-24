@@ -33,9 +33,16 @@ public class StateHistory implements AppHistory {
 
   private Set<HistoryListener> listeners = new HashSet<>();
   private final History history = Js.cast(DomGlobal.self.history);
+  private final String rootPath;
 
   /** Default constructor */
   public StateHistory() {
+    this("");
+  }
+
+  /** Default constructor */
+  public StateHistory(String rootPath) {
+    this.rootPath = isNull(rootPath) ? "" : rootPath.trim();
     DomGlobal.self.addEventListener(
         "popstate",
         event -> {
@@ -63,28 +70,33 @@ public class StateHistory implements AppHistory {
   }
 
   private void callListeners(String token, String title, String stateJson) {
+    if (!isSameRoot(token)) {
+      return;
+    }
     final List<HistoryListener> completedListeners = new ArrayList<>();
     listeners.stream()
         .filter(
-            l -> {
-              NormalizedToken normalized = getNormalizedToken(token, l);
+            listener -> {
+              NormalizedToken normalized = getNormalizedToken(rootPath, token, listener);
               if (isNull(normalized)) {
-                normalized = new DefaultNormalizedToken(token);
+                normalized = new DefaultNormalizedToken(rootPath, token);
               }
-              return l.getTokenFilter()
+              return listener
+                  .getTokenFilter()
                   .filter(
                       new DominoHistoryState(normalized.getToken().value(), title, stateJson)
                           .token);
             })
         .forEach(
-            l -> {
-              if (l.isRemoveOnComplete()) {
-                completedListeners.add(l);
+            listener -> {
+              if (listener.isRemoveOnComplete()) {
+                completedListeners.add(listener);
               }
               DomGlobal.setTimeout(
                   p0 -> {
-                    NormalizedToken normalized = getNormalizedToken(token, l);
-                    l.getListener()
+                    NormalizedToken normalized = getNormalizedToken(rootPath, token, listener);
+                    listener
+                        .getListener()
                         .onPopState(new DominoHistoryState(normalized, token, title, stateJson));
                   },
                   0);
@@ -94,6 +106,11 @@ public class StateHistory implements AppHistory {
   }
 
   private void inform(String token, String title, String stateJson) {
+
+    if (!isSameRoot(token)) {
+      return;
+    }
+
     try {
       JsMap<String, String> tokenMap = new JsMap<>();
       tokenMap.set("token", token);
@@ -108,13 +125,21 @@ public class StateHistory implements AppHistory {
     } catch (Exception ex) {
       LOGGER.log(
           Level.WARNING,
-          "Custom events not supported for this browser, multia-pp support wont work. will inform local app listeners only");
+          "Custom events not supported for this browser, multi-app support wont work. will inform local app listeners only");
       callListeners(token, title, stateJson);
     }
   }
 
-  private NormalizedToken getNormalizedToken(String token, HistoryListener listener) {
-    return listener.getTokenFilter().normalizeToken(token);
+  private NormalizedToken getNormalizedToken(
+      String rootPath, String token, HistoryListener listener) {
+    return listener.getTokenFilter().normalizeToken(rootPath, token);
+  }
+
+  private boolean isSameRoot(String token) {
+    if (this.rootPath.isEmpty()) {
+      return true;
+    }
+    return token.startsWith(rootPath);
   }
 
   /**
@@ -249,9 +274,9 @@ public class StateHistory implements AppHistory {
   @Override
   public void pushState(String token, String title, String data, TokenParameter... parameters) {
     String tokenWithParameters = replaceParameters(token, Arrays.asList(parameters));
-    if (nonNull(currentToken().value()) && !currentToken().value().equals(tokenWithParameters)) {
-      history.pushState(
-          JsState.state(tokenWithParameters, title, data), title, "/" + tokenWithParameters);
+    String result = attachRoot(tokenWithParameters);
+    if (nonNull(currentToken().value()) && !currentToken().value().equals(result)) {
+      history.pushState(JsState.state(result, title, data), title, "/" + result);
       if (nonNull(title) && !title.isEmpty()) {
         DomGlobal.document.title = title;
       }
@@ -343,11 +368,19 @@ public class StateHistory implements AppHistory {
   @Override
   public void pushState(String token, TokenParameter... parameters) {
     String tokenWithParameters = replaceParameters(token, Arrays.asList(parameters));
-    if (nonNull(currentToken().value()) && !currentToken().value().equals(tokenWithParameters))
-      history.pushState(
-          JsState.state(tokenWithParameters, windowTitle(), ""),
-          windowTitle(),
-          "/" + tokenWithParameters);
+    String result = attachRoot(tokenWithParameters);
+    if (nonNull(currentToken().value()) && !currentToken().value().equals(result))
+      history.pushState(JsState.state(result, windowTitle(), ""), windowTitle(), "/" + result);
+  }
+
+  private String attachRoot(String token) {
+    if (isNull(rootPath) || rootPath.isEmpty() || token.startsWith(rootPath)) {
+      return token;
+    }
+
+    String separator =
+        (rootPath.endsWith("/") || token.startsWith("/") || token.isEmpty()) ? "" : "/";
+    return rootPath + separator + token;
   }
 
   /**
@@ -360,7 +393,8 @@ public class StateHistory implements AppHistory {
    */
   @Override
   public void replaceState(String token, String title, String data) {
-    history.replaceState(JsState.state(token, data), title, "/" + token);
+    String withRoot = attachRoot(token);
+    history.replaceState(JsState.state(withRoot, data), title, "/" + withRoot);
   }
 
   /**
@@ -531,6 +565,12 @@ public class StateHistory implements AppHistory {
     return new StateHistoryToken(windowToken());
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public String getRootPath() {
+    return this.rootPath;
+  }
+
   /**
    * Reapply the current token and browser url and force calling all listeners with matching token
    * filters.
@@ -539,6 +579,7 @@ public class StateHistory implements AppHistory {
   public void fireCurrentStateHistory() {
     fireStateInternal(windowToken(), windowTitle(), stateData(windowState()));
   }
+
   /**
    * Reapply the current token and browser url and force calling all listeners with matching token
    * filters. and use a new page title.
@@ -551,8 +592,9 @@ public class StateHistory implements AppHistory {
   }
 
   private void fireStateInternal(String token, String title, String state) {
-    replaceState(token, title, state);
-    inform(token, title, state);
+    String withRoot = attachRoot(token);
+    replaceState(withRoot, title, state);
+    inform(withRoot, title, state);
   }
 
   private State windowState() {
@@ -581,6 +623,11 @@ public class StateHistory implements AppHistory {
 
   private State nullState() {
     return new State() {
+      @Override
+      public String rootPath() {
+        return StateHistory.this.rootPath;
+      }
+
       @Override
       public HistoryToken token() {
         return new StateHistoryToken(windowToken());
@@ -631,18 +678,23 @@ public class StateHistory implements AppHistory {
     private NormalizedToken normalizedToken;
 
     public DominoHistoryState(String token, String title, String data) {
-      this.token = new StateHistoryToken(token);
+      this.token = new StateHistoryToken(rootPath, token);
       this.data = data;
       this.title = title;
-      this.normalizedToken = new DefaultNormalizedToken(new StateHistoryToken(token));
+      this.normalizedToken = new DefaultNormalizedToken(new StateHistoryToken(rootPath, token));
     }
 
     public DominoHistoryState(
         NormalizedToken normalizedToken, String token, String title, String data) {
-      this.token = new StateHistoryToken(token);
+      this.token = new StateHistoryToken(rootPath, token);
       this.data = data;
       this.title = title;
       this.normalizedToken = normalizedToken;
+    }
+
+    @Override
+    public String rootPath() {
+      return StateHistory.this.rootPath;
     }
 
     @Override

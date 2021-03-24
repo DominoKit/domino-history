@@ -178,7 +178,7 @@ public interface HistoryToken {
   HistoryToken removePath(String path);
 
   /** @return Key, value map of all query parameters of the token */
-  Map<String, String> queryParameters();
+  Map<String, List<String>> queryParameters();
 
   /**
    * @param name name of the query parameter
@@ -192,7 +192,7 @@ public interface HistoryToken {
    * @return The string value of the query param that has it name as <b>name</b> if found, if not
    *     found it returns null.
    */
-  String getQueryParameter(String name);
+  List<String> getQueryParameter(String name);
 
   /**
    * Adds a query parameter with specified name and value to the current token, if a query parameter
@@ -203,6 +203,36 @@ public interface HistoryToken {
    * @return {@link HistoryToken} that contains the new query parameter.
    */
   HistoryToken setQueryParameter(String name, String value);
+
+  /**
+   * Adds a query parameter with specified name and value to the current token, if a query parameter
+   * with same name already exists then adds the values to the parameters values
+   *
+   * @param name query parameter name
+   * @param value query parameter value
+   * @return {@link HistoryToken} that contains the new query parameter.
+   */
+  HistoryToken addQueryParameter(String name, String value);
+
+  /**
+   * Adds a query parameter with specified name and values to the current token, if a query
+   * parameter with same name already exists, then replaces its values with the new one
+   *
+   * @param name query parameter name
+   * @param values query parameter value
+   * @return {@link HistoryToken} that contains the new query parameter.
+   */
+  HistoryToken setQueryParameter(String name, List<String> values);
+
+  /**
+   * Adds a query parameter with specified name and value to the current token, if a query parameter
+   * with same name already exists then add the values to the existing values
+   *
+   * @param name query parameter name
+   * @param values query parameter value
+   * @return {@link HistoryToken} that contains the new query parameter.
+   */
+  HistoryToken addQueryParameters(String name, List<String> values);
 
   /**
    * Adds a fragment segment to the end of the fragments part
@@ -220,6 +250,15 @@ public interface HistoryToken {
    * @return {@link HistoryToken} with the new query parameter appended to the end of query part.
    */
   HistoryToken appendParameter(String name, String value);
+
+  /**
+   * Appends a new query parameter to the end of the token query parameters part.
+   *
+   * @param name of the query parameter
+   * @param values List of string values
+   * @return {@link HistoryToken} with the new query parameter appended to the end of query part.
+   */
+  HistoryToken appendParameter(String name, List<String> values);
 
   /**
    * Replaces the last occurrence of a fragment segment with the specified replacement
@@ -251,6 +290,17 @@ public interface HistoryToken {
    *     added.
    */
   HistoryToken replaceParameter(String name, String replacementName, String replacementValue);
+
+  /**
+   * Removes the query parameter with the specified name, and adds a new parameter
+   *
+   * @param name The name of the parameter to be removed
+   * @param replacementName The name of the new parameter
+   * @param replacementValue List of String values of the new parameter
+   * @return {@link HistoryToken} with removed parameter with the specified name and a new parameter
+   *     added.
+   */
+  HistoryToken replaceParameter(String name, String replacementName, List<String> replacementValue);
 
   /**
    * Removes the query parameter with the specified name
@@ -313,11 +363,17 @@ public interface HistoryToken {
   /** @return the full string representation of a {@link HistoryToken} */
   String value();
 
+  /** @return the full string representation of a {@link HistoryToken} without its rootPath */
+  String noRootValue();
+
   /**
    * @return <b>true</b> if the token has expression parameters, expression parameters are segments
    *     that starts with <b>:</b> or surrounded with <b>{}</b> .
    */
   boolean hasVariables();
+
+  /** @return String, the rootPath of this token if set otherwise return empty String */
+  String getRootPath();
 
   class TokenCannotBeNullException extends RuntimeException {}
 

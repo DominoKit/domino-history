@@ -37,7 +37,7 @@ public interface TokenFilter {
    * @param token The token to be normalized
    * @return {@link NormalizedToken}, default is <b>null</b>.
    */
-  default NormalizedToken normalizeToken(String token) {
+  default NormalizedToken normalizeToken(String rootPath, String token) {
     return null;
   }
 
@@ -226,8 +226,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return new DefaultNormalizedToken(token);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -248,8 +248,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalize(token, matchingToken);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalize(rootPath, token, matchingToken);
     }
   }
 
@@ -270,8 +270,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalize(token, prefix);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalize(rootPath, token, prefix);
     }
   }
 
@@ -292,8 +292,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalizeTail(token, postfix);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalizeTail(rootPath, token, postfix);
     }
   }
 
@@ -314,12 +314,12 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
+    public NormalizedToken normalizeToken(String rootPath, String token) {
       if (token.contains(":")) {
         throw new UnsupportedOperationException(
             "Contains filter cannot normalize token, please remove all variable from filter!");
       }
-      return new DefaultNormalizedToken(token);
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -340,12 +340,12 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
+    public NormalizedToken normalizeToken(String rootPath, String token) {
       if (token.contains(":")) {
         throw new UnsupportedOperationException(
             "Contains fragment filter cannot normalize token, please remove all variable from filter!");
       }
-      return new DefaultNormalizedToken(token);
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -366,8 +366,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalizeFragments(token, matchingPart);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalizeFragments(rootPath, token, matchingPart);
     }
   }
 
@@ -388,8 +388,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalizeFragments(token, prefix);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalizeFragments(rootPath, token, prefix);
     }
   }
 
@@ -410,8 +410,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalizeFragmentsTail(token, postfix);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalizeFragmentsTail(rootPath, token, postfix);
     }
   }
 
@@ -427,8 +427,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return new DefaultNormalizedToken(token);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -449,12 +449,12 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
+    public NormalizedToken normalizeToken(String rootPath, String token) {
       if (token.contains(":")) {
         throw new UnsupportedOperationException(
             "Has path filter cannot normalize token, please remove all variable from filter!");
       }
-      return new DefaultNormalizedToken(token);
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -475,12 +475,12 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
+    public NormalizedToken normalizeToken(String rootPath, String token) {
       if (token.contains(":")) {
         throw new UnsupportedOperationException(
             "Has paths filter cannot normalize token, please remove all variable from filter!");
       }
-      return new DefaultNormalizedToken(token);
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -501,8 +501,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalizePaths(token, path);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalizePaths(rootPath, token, path);
     }
   }
 
@@ -523,8 +523,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalizePaths(token, path);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalizePaths(rootPath, token, path);
     }
   }
 
@@ -545,8 +545,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return TokenNormalizer.normalizePathTail(token, path);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return TokenNormalizer.normalizePathTail(rootPath, token, path);
     }
   }
 
@@ -560,12 +560,12 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
+    public NormalizedToken normalizeToken(String rootPath, String token) {
       if (token.contains(":")) {
         throw new UnsupportedOperationException(
             "Has paths filter cannot normalize token, please remove all variable from filter!");
       }
-      return new DefaultNormalizedToken(token);
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -577,8 +577,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return new DefaultNormalizedToken(token);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 
@@ -603,8 +603,8 @@ public interface TokenFilter {
     }
 
     @Override
-    public NormalizedToken normalizeToken(String token) {
-      return new DefaultNormalizedToken(token);
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return new DefaultNormalizedToken(rootPath, token);
     }
   }
 }

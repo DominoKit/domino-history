@@ -5,14 +5,25 @@ A wrapper for browser history state API
 
 ### Maven dependencies 
 
+- **Release**
+
 ```xml
 <dependency>
   <groupId>org.dominokit</groupId>
   <artifactId>domino-history-client</artifactId>
-  <version>1.0.0-RC1</version>
+  <version>1.0.0-RC2</version>
 </dependency>
 ```
 
+- **Development snapshot**
+
+```xml
+<dependency>
+  <groupId>org.dominokit</groupId>
+  <artifactId>domino-history-client</artifactId>
+  <version>HEAD-SNAPSHOT</version>
+</dependency>
+```
 ### GWT inherits
 
 `<inherits name="org.dominokit.domino.client.history.History"/>`
