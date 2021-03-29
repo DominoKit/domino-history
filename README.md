@@ -9,7 +9,7 @@
 # domino-history
 A wrapper for browser history state API
 
-### Maven dependencies
+### Maven dependencies 
 
 - **Release**
 
