@@ -483,8 +483,8 @@ public class JVMHistory implements AppHistory {
    */
   @Override
   public HistoryToken currentToken() {
-    if (isNull(forwards.peek())) return new StateHistoryToken("");
-    return new StateHistoryToken(forwards.peek().token);
+    if (isNull(forwards.peek())) return new StateHistoryToken(rootPath, "");
+    return new StateHistoryToken(rootPath, forwards.peek().token);
   }
 
   /** {@inheritDoc} */
