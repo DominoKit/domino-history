@@ -562,7 +562,7 @@ public class StateHistory implements AppHistory {
    */
   @Override
   public StateHistoryToken currentToken() {
-    return new StateHistoryToken(windowToken());
+    return new StateHistoryToken(rootPath, windowToken());
   }
 
   /** {@inheritDoc} */
