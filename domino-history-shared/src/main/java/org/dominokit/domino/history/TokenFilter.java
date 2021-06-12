@@ -218,6 +218,36 @@ public interface TokenFilter {
     return new QueryFilter(paramName, value);
   }
 
+  /**
+   * A static factory to create a Not {@link TokenFilter}
+   *
+   * @param tokenFilter the TokenFilter to be negated
+   * @return {@link TokenFilter}
+   */
+  static TokenFilter not(TokenFilter tokenFilter) {
+    return new Not(tokenFilter);
+  }
+
+  /**
+   * A static factory to create a {@link And} TokenFilter
+   *
+   * @param tokenFilters an Array of filters to be composed in this And TokenFilter
+   * @return {@link TokenFilter}
+   */
+  static TokenFilter and(TokenFilter... tokenFilters) {
+    return new And(tokenFilters);
+  }
+
+  /**
+   * A static factory to create a {@link Or} TokenFilter
+   *
+   * @param tokenFilters an Array of filters to be composed in this Or TokenFilter
+   * @return {@link TokenFilter}
+   */
+  static TokenFilter or(TokenFilter... tokenFilters) {
+    return new Or(tokenFilters);
+  }
+
   /** A token filter that will always return <b>true</b> */
   class AnyFilter implements TokenFilter {
     @Override
@@ -600,6 +630,78 @@ public interface TokenFilter {
     public boolean filter(HistoryToken token) {
       return token.hasQueryParameter(queryParam)
           && token.getQueryParameter(queryParam).equals(value);
+    }
+
+    @Override
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return new DefaultNormalizedToken(rootPath, token);
+    }
+  }
+
+  /** A token filter that negate the result of another token filter */
+  class Not implements TokenFilter {
+
+    private final TokenFilter tokenFilter;
+
+    public static Not of(TokenFilter tokenFilter) {
+      return new Not(tokenFilter);
+    }
+
+    public Not(TokenFilter tokenFilter) {
+      this.tokenFilter = tokenFilter;
+    }
+
+    @Override
+    public boolean filter(HistoryToken historyToken) {
+      return !tokenFilter.filter(historyToken);
+    }
+
+    @Override
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return tokenFilter.normalizeToken(rootPath, token);
+    }
+  }
+
+  /** A token filter that return <b>true</b> only if all composed TokenFilters return true */
+  class And implements TokenFilter {
+
+    private final TokenFilter[] tokenFilters;
+
+    public static And of(TokenFilter... tokenFilter) {
+      return new And(tokenFilter);
+    }
+
+    public And(TokenFilter... tokenFilters) {
+      this.tokenFilters = tokenFilters;
+    }
+
+    @Override
+    public boolean filter(HistoryToken historyToken) {
+      return Arrays.stream(tokenFilters).allMatch(tokenFilter -> tokenFilter.filter(historyToken));
+    }
+
+    @Override
+    public NormalizedToken normalizeToken(String rootPath, String token) {
+      return new DefaultNormalizedToken(rootPath, token);
+    }
+  }
+
+  /** A token filter that return <b>true</b> if any of the composed TokenFilters return true */
+  class Or implements TokenFilter {
+
+    private final TokenFilter[] tokenFilters;
+
+    public static Or of(TokenFilter... tokenFilter) {
+      return new Or(tokenFilter);
+    }
+
+    public Or(TokenFilter... tokenFilters) {
+      this.tokenFilters = tokenFilters;
+    }
+
+    @Override
+    public boolean filter(HistoryToken historyToken) {
+      return Arrays.stream(tokenFilters).anyMatch(tokenFilter -> tokenFilter.filter(historyToken));
     }
 
     @Override
