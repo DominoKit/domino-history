@@ -367,6 +367,10 @@ public interface DominoHistory {
     NormalizedToken normalizedToken();
 
     void setNormalizedToken(NormalizedToken normalizedToken);
+
+    default boolean isDirect() {
+      return false;
+    }
   }
 
   @FunctionalInterface
