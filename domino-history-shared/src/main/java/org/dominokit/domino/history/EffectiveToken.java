@@ -51,6 +51,10 @@ public class EffectiveToken {
     return result;
   }
 
+  public StateToken getState() {
+    return state;
+  }
+
   public String getToken() {
     return processedToken;
   }

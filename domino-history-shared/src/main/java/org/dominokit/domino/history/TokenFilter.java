@@ -296,7 +296,7 @@ public interface TokenFilter {
 
     @Override
     public boolean filter(HistoryToken token) {
-      return token.value().startsWith(prefix);
+      return token.noRootValue().startsWith(prefix);
     }
 
     @Override
