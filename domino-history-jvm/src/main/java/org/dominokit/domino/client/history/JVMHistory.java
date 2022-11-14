@@ -209,10 +209,11 @@ public class JVMHistory implements AppHistory {
    */
   @Override
   public void pushState(StateToken stateToken, TokenParameter... parameters) {
-    push(stateToken, ()->{}, parameters);
+    push(stateToken, () -> {}, parameters);
   }
 
-  public void pushState(StateToken stateToken, Runnable onPushHandler, TokenParameter... parameters) {
+  public void pushState(
+      StateToken stateToken, Runnable onPushHandler, TokenParameter... parameters) {
     push(stateToken, onPushHandler, parameters);
   }
 
@@ -295,17 +296,18 @@ public class JVMHistory implements AppHistory {
   }
 
   private void push(StateToken stateToken, TokenParameter... parameters) {
-    push(stateToken, ()->{}, parameters);
+    push(stateToken, () -> {}, parameters);
   }
 
-  private void push(StateToken stateToken, Runnable onPushHandler, TokenParameter... parameters){
+  private void push(StateToken stateToken, Runnable onPushHandler, TokenParameter... parameters) {
     InterceptorChain interceptorChain =
-            new InterceptorChain(
-                    interceptors, ()-> {
+        new InterceptorChain(
+            interceptors,
+            () -> {
               forwards.push(
-                      new HistoryState(
-                              replaceParameters(stateToken.getToken(), Arrays.asList(parameters)),
-                              stateToken.getData()));
+                  new HistoryState(
+                      replaceParameters(stateToken.getToken(), Arrays.asList(parameters)),
+                      stateToken.getData()));
               onPushHandler.run();
             });
 

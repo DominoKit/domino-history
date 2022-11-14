@@ -15,11 +15,11 @@
  */
 package org.dominokit.domino.history;
 
+import static java.util.Objects.nonNull;
+
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-
-import static java.util.Objects.nonNull;
 
 public class InterceptorChain implements IsInterceptorChain {
   private final Deque<HistoryInterceptor> interceptors = new LinkedList<>();
@@ -40,7 +40,7 @@ public class InterceptorChain implements IsInterceptorChain {
       if (event.isCanceled()) {
         onCompleted.run();
       }
-    }else {
+    } else {
       onCompleted.run();
     }
   }
