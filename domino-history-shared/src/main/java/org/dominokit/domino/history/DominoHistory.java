@@ -92,221 +92,47 @@ public interface DominoHistory {
    * Change the url to the specified token without firing url change listeners, sets the title of
    * the new page and assign the data to the new state.
    *
-   * @param token The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
+   * @param stateToken {@link StateToken}
    */
-  void pushState(String token, String title, String data);
-
-  /**
-   * Change the url to the specified token without firing url change listeners, sets the title of
-   * the new page.
-   *
-   * @param token The new url.
-   * @param title The new page title
-   */
-  void pushState(String token, String title);
+  void pushState(StateToken stateToken);
 
   /**
    * Change the url to the specified token without firing url change listeners, sets the title of
    * the new page and assign the data to the new state. In case the new token has expression
    * parameters in the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
    *
-   * @param token The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
+   * @param stateToken {@link StateToken}
    * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
    *     the url token
    */
-  void pushState(String token, String title, String data, TokenParameter... parameters);
-
-  /**
-   * Change the url to the specified token without firing url change listeners.
-   *
-   * @param token The new url.
-   */
-  void pushState(String token);
-
-  /**
-   * Change the url to the specified token without firing url change listeners. In case the new
-   * token has expression parameters in the form <b>:paramName</b> they will be replaced using the
-   * <b>parameters</b>
-   *
-   * @param token The new url.
-   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
-   *     the url token
-   */
-  void pushState(String token, TokenParameter... parameters);
+  void pushState(StateToken stateToken, TokenParameter... parameters);
 
   /**
    * Change the url to the specified token and fire change listeners, sets the title of the new page
    * and assign the data to the new state.
    *
-   * @param token The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
+   * @param stateToken {@link StateToken}
    */
-  void fireState(String token, String title, String data);
-
-  /**
-   * Change the url to the specified token and fire the url change listeners, sets the title of the
-   * new page.
-   *
-   * @param token The new url.
-   * @param title The new page title
-   */
-  void fireState(String token, String title);
+  void fireState(StateToken stateToken);
 
   /**
    * Change the url to the specified token and fire url change listeners, sets the title of the new
    * page and assign the data to the new state. In case the new token has expression parameters in
    * the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
    *
-   * @param token The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
+   * @param stateToken {@link StateToken}
    * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
    *     the url token
    */
-  void fireState(String token, String title, String data, TokenParameter... parameters);
-
-  /**
-   * Change the url to the specified token and fire url change listeners.
-   *
-   * @param token The new url.
-   */
-  void fireState(String token);
-
-  /**
-   * Change the url to the specified token and fire url change listeners. In case the new token has
-   * expression parameters in the form <b>:paramName</b> they will be replaced using the
-   * <b>parameters</b>
-   *
-   * @param token The new url.
-   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
-   *     the url token
-   */
-  void fireState(String token, TokenParameter... parameters);
+  void fireState(StateToken stateToken, TokenParameter... parameters);
 
   /**
    * Replace the current url with the specified token without firing url change listeners, sets the
    * title of the new page and assign the data to the new state.
    *
-   * @param token The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
+   * @param stateToken {@link StateToken}
    */
-  void replaceState(String token, String title, String data);
-
-  /**
-   * Change the url to the specified token without firing url change listeners, sets the title of
-   * the new page and assign the data to the new state.
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
-   */
-  void pushState(HistoryToken token, String title, String data);
-
-  /**
-   * Change the url to the specified token without firing url change listeners, sets the title of
-   * the new page.
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param title The new page title
-   */
-  void pushState(HistoryToken token, String title);
-
-  /**
-   * Change the url to the specified token without firing url change listeners, sets the title of
-   * the new page and assign the data to the new state. In case the new token has expression
-   * parameters in the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
-   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
-   *     the url token
-   */
-  void pushState(HistoryToken token, String title, String data, TokenParameter... parameters);
-
-  /**
-   * Change the url to the specified token without firing url change listeners.
-   *
-   * @param token {@link HistoryToken} The new url.
-   */
-  void pushState(HistoryToken token);
-
-  /**
-   * Change the url to the specified token without firing url change listeners. In case the new
-   * token has expression parameters in the form <b>:paramName</b> they will be replaced using the
-   * <b>parameters</b>
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
-   *     the url token
-   */
-  void pushState(HistoryToken token, TokenParameter... parameters);
-
-  /**
-   * Change the url to the specified token and fire change listeners, sets the title of the new page
-   * and assign the data to the new state.
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
-   */
-  void fireState(HistoryToken token, String title, String data);
-
-  /**
-   * Change the url to the specified token and fire the url change listeners, sets the title of the
-   * new page.
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param title The new page title
-   */
-  void fireState(HistoryToken token, String title);
-
-  /**
-   * Change the url to the specified token and fire url change listeners, sets the title of the new
-   * page and assign the data to the new state. In case the new token has expression parameters in
-   * the form <b>:paramName</b> they will be replaced using the <b>parameters</b>
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
-   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
-   *     the url token
-   */
-  void fireState(HistoryToken token, String title, String data, TokenParameter... parameters);
-
-  /**
-   * Change the url to the specified token and fire url change listeners.
-   *
-   * @param token {@link HistoryToken} The new url.
-   */
-  void fireState(HistoryToken token);
-
-  /**
-   * Change the url to the specified token and fire url change listeners. In case the new token has
-   * expression parameters in the form <b>:paramName</b> they will be replaced using the
-   * <b>parameters</b>
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param parameters a list of {@link TokenParameter} to be used to replace expression params in
-   *     the url token
-   */
-  void fireState(HistoryToken token, TokenParameter... parameters);
-
-  /**
-   * Replace the current url with the specified token without firing url change listeners, sets the
-   * title of the new page and assign the data to the new state.
-   *
-   * @param token {@link HistoryToken} The new url.
-   * @param title The new page title
-   * @param data The data to assign to this page state.
-   */
-  void replaceState(HistoryToken token, String title, String data);
+  void replaceState(StateToken stateToken);
 
   /**
    * Parse the current url and return an immutable instance of {@link HistoryToken}
@@ -321,6 +147,10 @@ public interface DominoHistory {
    * @return String
    */
   String getRootPath();
+
+  void addInterceptor(HistoryInterceptor interceptor);
+
+  void removeInterceptor(HistoryInterceptor interceptor);
 
   /** A functional interface to define a listener to be called when url state is changed. */
   interface StateListener {
@@ -367,6 +197,10 @@ public interface DominoHistory {
     NormalizedToken normalizedToken();
 
     void setNormalizedToken(NormalizedToken normalizedToken);
+
+    default boolean isDirect() {
+      return false;
+    }
   }
 
   @FunctionalInterface

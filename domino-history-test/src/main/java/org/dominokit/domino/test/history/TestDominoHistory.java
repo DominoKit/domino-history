@@ -16,6 +16,7 @@
 package org.dominokit.domino.test.history;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import java.util.*;
 import org.dominokit.domino.history.*;
@@ -27,6 +28,8 @@ public class TestDominoHistory implements AppHistory {
   private Deque<HistoryState> forwards = new LinkedList<>();
   private Deque<HistoryState> backwards = new LinkedList<>();
   private final String rootPath;
+
+  private List<HistoryInterceptor> interceptors = new ArrayList<>();
 
   public TestDominoHistory() {
     this("");
@@ -138,118 +141,34 @@ public class TestDominoHistory implements AppHistory {
   }
 
   @Override
-  public void pushState(String token, String title, String data) {
-    push(token, data, new TokenParameter[0]);
+  public void pushState(StateToken stateToken) {
+    push(stateToken, new TokenParameter[0]);
   }
 
   @Override
-  public void pushState(String token, String title, String data, TokenParameter... parameters) {
-    push(token, data, parameters);
+  public void pushState(StateToken stateToken, TokenParameter... parameters) {
+    push(stateToken, parameters);
+  }
+
+  private void pushState(
+      StateToken stateToken, Runnable onPushHandler, TokenParameter... parameters) {
+    push(stateToken, onPushHandler, parameters);
   }
 
   @Override
-  public void pushState(String token) {
-    push(token, "", new TokenParameter[0]);
+  public void fireState(StateToken stateToken) {
+    fireState(stateToken, new TokenParameter[0]);
   }
 
   @Override
-  public void pushState(String token, TokenParameter... parameters) {
-    push(token, "", parameters);
+  public void fireState(StateToken stateToken, TokenParameter... parameters) {
+    pushState(stateToken, this::fireCurrentStateHistory, parameters);
   }
 
   @Override
-  public void fireState(String token, String title, String data) {
-    fireState(token, title, data, new TokenParameter[0]);
-  }
-
-  @Override
-  public void fireState(String token, String title, String data, TokenParameter... parameters) {
-    pushState(token, title, data, parameters);
-    fireCurrentStateHistory();
-  }
-
-  @Override
-  public void fireState(String token) {
-    fireState(token, new TokenParameter[0]);
-  }
-
-  @Override
-  public void fireState(String token, TokenParameter... parameters) {
-    pushState(token, parameters);
-    fireCurrentStateHistory();
-  }
-
-  @Override
-  public void replaceState(String token, String title, String data) {
+  public void replaceState(StateToken stateToken) {
     forwards.pop();
-    push(token, data);
-  }
-
-  @Override
-  public void pushState(HistoryToken token, String title, String data) {
-    pushState(token.value(), title, data);
-  }
-
-  @Override
-  public void pushState(
-      HistoryToken token, String title, String data, TokenParameter... parameters) {
-    pushState(token.value(), title, data, parameters);
-  }
-
-  @Override
-  public void pushState(HistoryToken token) {
-    pushState(token.value());
-  }
-
-  @Override
-  public void pushState(HistoryToken token, TokenParameter... parameters) {
-    pushState(token.value(), parameters);
-  }
-
-  @Override
-  public void fireState(HistoryToken token, String title, String data) {
-    fireState(token.value(), title, data);
-  }
-
-  @Override
-  public void fireState(
-      HistoryToken token, String title, String data, TokenParameter... parameters) {
-    fireState(token.value(), title, data, parameters);
-  }
-
-  @Override
-  public void fireState(HistoryToken token) {
-    fireState(token.value());
-  }
-
-  @Override
-  public void fireState(HistoryToken token, TokenParameter... parameters) {
-    fireState(token.value(), parameters);
-  }
-
-  @Override
-  public void replaceState(HistoryToken token, String title, String data) {
-    replaceState(token.value(), title, data);
-  }
-
-  @Override
-  public void pushState(String token, String title) {
-    pushState(token, title, "");
-  }
-
-  @Override
-  public void fireState(String token, String title) {
-    fireState(token, title, "");
-  }
-
-  @Override
-  public void pushState(HistoryToken token, String title) {
-    pushState(token.value(), title, "");
-  }
-
-  @Override
-  public void fireState(HistoryToken token, String title) {
-    fireState(token.value(), title, "");
+    push(stateToken);
   }
 
   @Override
@@ -275,16 +194,29 @@ public class TestDominoHistory implements AppHistory {
   }
 
   public void initialState(String token, String data) {
-    push(token, data);
+    push(StateToken.of(token).data(data));
   }
 
-  private void push(String token, String data, TokenParameter... parameters) {
-
-    forwards.push(new HistoryState(replaceParameters(token, Arrays.asList(parameters)), data));
+  private void push(StateToken stateToken, TokenParameter... parameters) {
+    push(stateToken, () -> {}, parameters);
   }
 
-  private String replaceParameters(String token, List<TokenParameter> parametersList) {
-    String result = token;
+  private void push(StateToken stateToken, Runnable onPushHandler, TokenParameter... parameters) {
+    InterceptorChain interceptorChain =
+        new InterceptorChain(
+            interceptors,
+            () -> {
+              forwards.push(
+                  new HistoryState(
+                      replaceParameters(stateToken, Arrays.asList(parameters)),
+                      stateToken.getData()));
+              onPushHandler.run();
+            });
+    interceptorChain.intercept(new TokenEvent(stateToken));
+  }
+
+  private String replaceParameters(StateToken stateToken, List<TokenParameter> parametersList) {
+    String result = stateToken.getToken();
     for (TokenParameter parameter : parametersList) {
       result = result.replace(":" + parameter.getName(), parameter.getValue());
     }
@@ -324,6 +256,20 @@ public class TestDominoHistory implements AppHistory {
 
   public Deque<HistoryState> getBackwards() {
     return backwards;
+  }
+
+  @Override
+  public void addInterceptor(HistoryInterceptor interceptor) {
+    if (nonNull(interceptor)) {
+      this.interceptors.add(interceptor);
+    }
+  }
+
+  @Override
+  public void removeInterceptor(HistoryInterceptor interceptor) {
+    if (nonNull(interceptor)) {
+      this.interceptors.remove(interceptor);
+    }
   }
 
   private class TestState implements State {

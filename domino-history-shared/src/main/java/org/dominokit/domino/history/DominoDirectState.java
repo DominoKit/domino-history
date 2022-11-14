@@ -18,6 +18,7 @@ package org.dominokit.domino.history;
 import static java.util.Objects.isNull;
 import static org.dominokit.domino.history.DominoHistory.*;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /** An implementation of {@link DirectState} */
@@ -54,8 +55,52 @@ public class DominoDirectState implements DirectState {
     state.setNormalizedToken(normalized);
     if (tokenFilter.filter(
         new StateHistoryToken(state.rootPath(), normalized.getToken().value()))) {
-      listener.onPopState(state);
+      listener.onPopState(new DirectDominoHistoryState(state));
       onCompleted.accept(this);
+    }
+  }
+
+  private static class DirectDominoHistoryState implements State {
+
+    private final State state;
+
+    public DirectDominoHistoryState(State state) {
+      this.state = state;
+    }
+
+    @Override
+    public String rootPath() {
+      return state.rootPath();
+    }
+
+    @Override
+    public HistoryToken token() {
+      return state.token();
+    }
+
+    @Override
+    public Optional<String> data() {
+      return state.data();
+    }
+
+    @Override
+    public String title() {
+      return state.title();
+    }
+
+    @Override
+    public NormalizedToken normalizedToken() {
+      return state.normalizedToken();
+    }
+
+    @Override
+    public void setNormalizedToken(NormalizedToken normalizedToken) {
+      state.setNormalizedToken(normalizedToken);
+    }
+
+    @Override
+    public boolean isDirect() {
+      return true;
     }
   }
 }
