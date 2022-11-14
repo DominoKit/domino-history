@@ -16,47 +16,28 @@
 package org.dominokit.domino.client.history;
 
 import elemental2.dom.DomGlobal;
+import java.util.Optional;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
+import org.dominokit.domino.history.EffectiveToken;
 
 /** A JsInterop implementation to represent the current state of the page on the browser. */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 public class JsState {
   /** The url in the browser */
   public String historyToken;
-  /**
-   * Data String assigned to the current browser state, on referesh or reload this is always null
-   */
+  /** Data String assigned to the current browser state, on refresh or reload this is always null */
   public String data;
   /** The title of the current page */
   public String title;
 
   @JsOverlay
-  public static JsState state(String token) {
+  public static JsState state(EffectiveToken token) {
     JsState state = new JsState();
-    state.historyToken = token;
-    state.data = "";
-    state.title = DomGlobal.document.title;
-    return state;
-  }
-
-  @JsOverlay
-  public static JsState state(String token, String data) {
-    JsState state = new JsState();
-    state.historyToken = token;
-    state.data = data;
-    state.title = DomGlobal.document.title;
-
-    return state;
-  }
-
-  @JsOverlay
-  public static JsState state(String token, String title, String data) {
-    JsState state = new JsState();
-    state.historyToken = token;
-    state.data = data;
-    state.title = title;
+    state.historyToken = token.getToken();
+    state.data = Optional.ofNullable(token.getData()).orElse("");
+    state.title = Optional.ofNullable(token.getTitle()).orElse(DomGlobal.document.title);
 
     return state;
   }
