@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.dominokit</groupId>
         <artifactId>domino-history</artifactId>
-        <version>1.0.0-RC5</version>
+        <version>1.0.0</version>
     </parent>
     <packaging>gwt-lib</packaging>
     <modelVersion>4.0.0</modelVersion>
