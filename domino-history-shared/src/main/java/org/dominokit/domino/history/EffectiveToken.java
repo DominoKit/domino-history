@@ -46,7 +46,7 @@ public class EffectiveToken {
   private String replaceParameters(String token, List<TokenParameter> parametersList) {
     String result = token;
     for (TokenParameter parameter : parametersList) {
-      result = result.replace(":" + parameter.getName(), parameter.getValue());
+      result = parameter.apply(result);
     }
     return result;
   }

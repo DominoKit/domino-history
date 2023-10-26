@@ -16,32 +16,18 @@
 package org.dominokit.domino.history;
 
 /** A POJO representing a query parameter in a {@link HistoryToken} */
-public class TokenParameter {
-  private String name;
-  private String value;
-
-  public TokenParameter(String name, String value) {
-    this.name = name;
-    this.value = value;
+public class TokenQueryParameter extends TokenParameter {
+  public TokenQueryParameter(String name, String value) {
+    super(name, value);
   }
 
-  public static TokenParameter of(String name, String value) {
-    return new TokenParameter(name, value);
-  }
-
-  public static TokenParameter query(String name, String value) {
+  public static TokenQueryParameter of(String name, String value) {
     return new TokenQueryParameter(name, value);
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
   public String apply(String token) {
-    return token.replace(":" + getName(), getValue());
+    StateHistoryToken stateHistoryToken = new StateHistoryToken(token);
+    stateHistoryToken.appendParameter(getName(), getValue());
+    return stateHistoryToken.value();
   }
 }

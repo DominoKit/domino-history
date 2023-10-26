@@ -17,11 +17,18 @@ package org.dominokit.domino.history;
 
 public class TokenEvent {
 
-  private StateToken stateToken;
+  private final StateToken stateToken;
+  private final HistoryToken parsedToken;
   private boolean canceled;
 
   public TokenEvent(StateToken stateToken) {
     this.stateToken = stateToken;
+    this.parsedToken = new StateHistoryToken(stateToken.getToken());
+  }
+
+  public TokenEvent(String rootPath, StateToken stateToken) {
+    this.stateToken = stateToken;
+    this.parsedToken = new StateHistoryToken(rootPath, stateToken.getToken());
   }
 
   public StateToken getStateToken() {
@@ -34,5 +41,9 @@ public class TokenEvent {
 
   public void cancel() {
     this.canceled = true;
+  }
+
+  public HistoryToken getParsedToken() {
+    return parsedToken;
   }
 }

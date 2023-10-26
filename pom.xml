@@ -68,14 +68,14 @@
     <properties>
         <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
         <next.release.version>1.0.1</next.release.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <maven.compiler.plugin>3.8.1</maven.compiler.plugin>
         <maven.source.plugin>3.0.1</maven.source.plugin>
-        <maven.javadoc.plugin>2.10.4</maven.javadoc.plugin>
+        <maven.javadoc.plugin>3.5.0</maven.javadoc.plugin>
         <maven.gpg.plugin>1.6</maven.gpg.plugin>
         <maven.nexus.staging.plugin>1.6.8</maven.nexus.staging.plugin>
         <maven.deploy.plugin>3.0.0-M1</maven.deploy.plugin>
@@ -85,6 +85,7 @@
         <maven.surfire.plugin>3.0.0-M1</maven.surfire.plugin>
         <maven.gwt.plugin>1.0.0</maven.gwt.plugin>
         <elemental2.version>1.1.0</elemental2.version>
+        <domino.doc.tool.version>1.0.0</domino.doc.tool.version>
     </properties>
 
     <dependencyManagement>
@@ -147,8 +148,33 @@
                 <version>${maven.javadoc.plugin}</version>
                 <configuration>
                     <failOnError>false</failOnError>
+                    <release>11</release>
                 </configuration>
                 <executions>
+                    <execution>
+                        <id>site-docs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <doclet>org.dominokit.doctool.DominoUiDoclet</doclet>
+
+                            <!-- <docletPath>/path/to/doccheck.jar</docletPath> -->
+                            <docletArtifact>
+                                <groupId>org.dominokit</groupId>
+                                <artifactId>domino-doc-tool</artifactId>
+                                <version>${domino.doc.tool.version}</version>
+                            </docletArtifact>
+                            <useStandardDocletOptions>false</useStandardDocletOptions>
+                            <additionalOptions>
+                                <additionalOption>-duidocsdir</additionalOption>
+                                <additionalOption>'${project.build.directory}/apidocs/'</additionalOption>
+                                <additionalOption>-duidocsurl</additionalOption>
+                                <additionalOption>'https://www.javadoc.io/doc/org.dominokit/domino-history/latest/'</additionalOption>
+                            </additionalOptions>
+                            <destDir>${project.build.directory}/sitedocs/</destDir>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>attach-javadocs</id>
                         <goals>

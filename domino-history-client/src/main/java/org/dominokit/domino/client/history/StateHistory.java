@@ -282,7 +282,7 @@ public class StateHistory implements AppHistory {
                 onPushHandler.run();
               }
             });
-    interceptorChain.intercept(new TokenEvent(stateToken));
+    interceptorChain.intercept(new TokenEvent(rootPath, stateToken));
   }
 
   private static void setPageTitle(EffectiveToken effectiveToken) {
