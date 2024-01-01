@@ -33,7 +33,7 @@ public class StateHistory implements AppHistory {
 
   private Set<HistoryListener> listeners = new HashSet<>();
   private final History history = Js.cast(DomGlobal.self.history);
-  private final String rootPath;
+  private String rootPath;
 
   private final List<HistoryInterceptor> interceptors = new ArrayList<>();
 
@@ -44,7 +44,7 @@ public class StateHistory implements AppHistory {
 
   /** Default constructor */
   public StateHistory(String rootPath) {
-    this.rootPath = isNull(rootPath) ? "" : rootPath.trim();
+    setRootPath(rootPath);
     DomGlobal.self.addEventListener(
         "popstate",
         event -> {
@@ -367,6 +367,11 @@ public class StateHistory implements AppHistory {
   }
 
   @Override
+  public void setRootPath(String path) {
+    this.rootPath = isNull(path) ? "" : path.trim();
+  }
+
+  @Override
   public void addInterceptor(HistoryInterceptor interceptor) {
     if (nonNull(interceptor)) {
       this.interceptors.add(interceptor);
@@ -387,6 +392,15 @@ public class StateHistory implements AppHistory {
   @Override
   public void fireCurrentStateHistory() {
     fireCurrentStateHistory(windowTitle());
+  }
+
+  /** Invoke the listeners with the current token without firing an event */
+  @Override
+  public void invoke() {
+    StateToken stateToken =
+        StateToken.of(windowToken()).title(windowTitle()).data(stateData(windowState()));
+    EffectiveToken effectiveToken = new EffectiveToken(rootPath, stateToken);
+    callListeners(effectiveToken);
   }
 
   /**

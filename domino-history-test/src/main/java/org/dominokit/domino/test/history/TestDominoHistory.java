@@ -27,7 +27,7 @@ public class TestDominoHistory implements AppHistory {
   private Set<HistoryListener> listeners = new HashSet<>();
   private Deque<HistoryState> forwards = new LinkedList<>();
   private Deque<HistoryState> backwards = new LinkedList<>();
-  private final String rootPath;
+  private String rootPath;
 
   private List<HistoryInterceptor> interceptors = new ArrayList<>();
 
@@ -36,7 +36,7 @@ public class TestDominoHistory implements AppHistory {
   }
 
   public TestDominoHistory(String rootPath) {
-    this.rootPath = isNull(rootPath) ? "" : rootPath.trim();
+    setRootPath(rootPath);
   }
 
   @Override
@@ -184,6 +184,11 @@ public class TestDominoHistory implements AppHistory {
   }
 
   @Override
+  public void setRootPath(String path) {
+    this.rootPath = isNull(path) ? "" : path.trim();
+  }
+
+  @Override
   public void fireCurrentStateHistory() {
     if (!forwards.isEmpty()) inform(forwards.peek());
   }
@@ -269,6 +274,14 @@ public class TestDominoHistory implements AppHistory {
   public void removeInterceptor(HistoryInterceptor interceptor) {
     if (nonNull(interceptor)) {
       this.interceptors.remove(interceptor);
+    }
+  }
+
+  @Override
+  public void invoke() {
+    final HistoryState state = forwards.peek();
+    if (nonNull(state)) {
+      inform(state);
     }
   }
 

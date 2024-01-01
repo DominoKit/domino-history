@@ -27,4 +27,6 @@ public interface CurrentStateHistory {
    * @param title the page title
    */
   void fireCurrentStateHistory(String title);
+
+  void invoke();
 }

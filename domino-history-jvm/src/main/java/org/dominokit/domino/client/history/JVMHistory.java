@@ -30,7 +30,7 @@ public class JVMHistory implements AppHistory {
   private Set<HistoryListener> listeners = new HashSet<>();
   private Deque<HistoryState> forwards = new LinkedList<>();
   private Deque<HistoryState> backwards = new LinkedList<>();
-  private final String rootPath;
+  private String rootPath;
 
   private List<HistoryInterceptor> interceptors = new ArrayList<>();
 
@@ -39,7 +39,7 @@ public class JVMHistory implements AppHistory {
   }
 
   public JVMHistory(String rootPath) {
-    this.rootPath = isNull(rootPath) ? "" : rootPath.trim();
+    setRootPath(rootPath);
   }
 
   /**
@@ -271,6 +271,11 @@ public class JVMHistory implements AppHistory {
     return this.rootPath;
   }
 
+  @Override
+  public void setRootPath(String path) {
+    this.rootPath = isNull(path) ? "" : path.trim();
+  }
+
   /**
    * Reapply the current token and virtual url and force calling all listeners with matching token
    * filters.
@@ -368,6 +373,14 @@ public class JVMHistory implements AppHistory {
   public void removeInterceptor(HistoryInterceptor interceptor) {
     if (nonNull(interceptor)) {
       this.interceptors.remove(interceptor);
+    }
+  }
+
+  @Override
+  public void invoke() {
+    final HistoryState state = forwards.peek();
+    if (nonNull(state)) {
+      inform(state);
     }
   }
 
