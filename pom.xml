@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dominokit</groupId>
     <artifactId>domino-history</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <packaging>pom</packaging>
 
     <name>domino-history</name>
@@ -67,13 +67,13 @@
 
     <properties>
         <snapshot.version>HEAD-SNAPSHOT</snapshot.version>
-        <next.release.version>1.0.2</next.release.version>
+        <next.release.version>1.0.3</next.release.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <maven.compiler.plugin>3.8.1</maven.compiler.plugin>
+        <maven.compiler.plugin>3.11.0</maven.compiler.plugin>
         <maven.source.plugin>3.0.1</maven.source.plugin>
         <maven.javadoc.plugin>3.5.0</maven.javadoc.plugin>
         <maven.gpg.plugin>1.6</maven.gpg.plugin>
@@ -148,7 +148,9 @@
                 <version>${maven.javadoc.plugin}</version>
                 <configuration>
                     <failOnError>false</failOnError>
+                    <failOnWarnings>false</failOnWarnings>
                     <release>11</release>
+                    <doclint>none</doclint>
                 </configuration>
                 <executions>
                     <execution>
@@ -157,9 +159,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <doclet>org.dominokit.doctool.DominoUiDoclet</doclet>
-
-                            <!-- <docletPath>/path/to/doccheck.jar</docletPath> -->
+                            <doclet>org.dominokit.doctool.DominoDocsDoclet</doclet>
                             <docletArtifact>
                                 <groupId>org.dominokit</groupId>
                                 <artifactId>domino-doc-tool</artifactId>
@@ -172,7 +172,7 @@
                                 <additionalOption>-duidocsurl</additionalOption>
                                 <additionalOption>'https://www.javadoc.io/doc/org.dominokit/domino-history/latest/'</additionalOption>
                             </additionalOptions>
-                            <destDir>${project.build.directory}/sitedocs/</destDir>
+                            <destDir>${project.build.directory}/apidocs/</destDir>
                         </configuration>
                     </execution>
                     <execution>
@@ -180,6 +180,11 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <additionalJOptions>
+                                <additionalJOption>--allow-script-in-comments</additionalJOption>
+                            </additionalJOptions>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

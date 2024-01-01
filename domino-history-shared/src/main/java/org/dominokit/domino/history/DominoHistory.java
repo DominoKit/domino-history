@@ -148,6 +148,13 @@ public interface DominoHistory {
    */
   String getRootPath();
 
+  /**
+   * Set the root path for this DominoHistory instance
+   *
+   * @param path String new root path.
+   */
+  void setRootPath(String path);
+
   void addInterceptor(HistoryInterceptor interceptor);
 
   void removeInterceptor(HistoryInterceptor interceptor);
