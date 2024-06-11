@@ -366,7 +366,11 @@ public interface TokenFilter {
 
     @Override
     public boolean filter(HistoryToken token) {
-      return token.fragment().contains(matchingPart);
+      String unHashed = TokenUtil.unHashFragment(this.matchingPart);
+      if (unHashed.isEmpty()) {
+        return false;
+      }
+      return token.fragment().contains(unHashed);
     }
 
     @Override
@@ -380,7 +384,7 @@ public interface TokenFilter {
   }
 
   /**
-   * A token filter that will return <b>true</b> only if the history token fargment part is an exact
+   * A token filter that will return <b>true</b> only if the history token fragment part is an exact
    * match of the specified part.
    */
   class ExactFragmentFilter implements TokenFilter {
@@ -392,7 +396,11 @@ public interface TokenFilter {
 
     @Override
     public boolean filter(HistoryToken token) {
-      return token.fragment().equals(matchingPart);
+      String unHashed = TokenUtil.unHashFragment(this.matchingPart);
+      if (unHashed.isEmpty()) {
+        return false;
+      }
+      return token.fragment().equals(unHashed);
     }
 
     @Override
@@ -414,7 +422,11 @@ public interface TokenFilter {
 
     @Override
     public boolean filter(HistoryToken token) {
-      return token.fragment().startsWith(prefix);
+      String unHashed = TokenUtil.unHashFragment(this.prefix);
+      if (unHashed.isEmpty()) {
+        return false;
+      }
+      return token.fragment().startsWith(unHashed);
     }
 
     @Override
@@ -436,7 +448,11 @@ public interface TokenFilter {
 
     @Override
     public boolean filter(HistoryToken token) {
-      return token.fragment().endsWith(postfix);
+      String unHashed = TokenUtil.unHashFragment(this.postfix);
+      if (unHashed.isEmpty()) {
+        return false;
+      }
+      return token.fragment().endsWith(unHashed);
     }
 
     @Override
