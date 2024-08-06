@@ -411,8 +411,13 @@ public class StateHistory implements AppHistory {
    */
   @Override
   public void fireCurrentStateHistory(String title) {
-
     fireStateInternal(StateToken.of(windowToken()).title(title).data(stateData(windowState())));
+  }
+
+  @Override
+  public void reload() {
+    Location location = Js.uncheckedCast(DomGlobal.location);
+    location.reload();
   }
 
   private void fireStateInternal(StateToken stateToken) {

@@ -159,6 +159,8 @@ public interface DominoHistory {
 
   void removeInterceptor(HistoryInterceptor interceptor);
 
+  void reload();
+
   /** A functional interface to define a listener to be called when url state is changed. */
   interface StateListener {
     /**

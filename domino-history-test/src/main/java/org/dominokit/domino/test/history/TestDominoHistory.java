@@ -285,6 +285,11 @@ public class TestDominoHistory implements AppHistory {
     }
   }
 
+  @Override
+  public void reload() {
+    fireCurrentStateHistory();
+  }
+
   private class TestState implements State {
 
     private final HistoryState historyState;
