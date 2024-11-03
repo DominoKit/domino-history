@@ -384,6 +384,11 @@ public class JVMHistory implements AppHistory {
     }
   }
 
+  @Override
+  public void reload() {
+    fireCurrentStateHistory();
+  }
+
   private class JVMState implements State {
 
     private final HistoryState historyState;

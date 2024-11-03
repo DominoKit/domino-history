@@ -515,6 +515,21 @@ public class StateHistoryToken implements HistoryToken {
   }
 
   /**
+   * Remove all paths that appear after the specified path element
+   *
+   * @param offsetPath the path to remove its tailing paths, the specified offsetPath won't be
+   *     removed.
+   * @return {@link HistoryToken} with its path part being ends with the specified offsetPath.
+   */
+  @Override
+  public HistoryToken removePathTail(String offsetPath) {
+    while (!endsWithPath(offsetPath)) {
+      removeLastPath();
+    }
+    return this;
+  }
+
+  /**
    * Replace the whole token fragment part with the newFragment
    *
    * @param newFragment the new fragment segment

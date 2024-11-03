@@ -156,6 +156,15 @@ public interface HistoryToken {
   HistoryToken replaceAllPaths(String newPath);
 
   /**
+   * Remove all paths that appear after the specified path element
+   *
+   * @param offsetPath the path to remove its tailing paths, the specified offsetPath won't be
+   *     removed.
+   * @return {@link HistoryToken} with its path part being ends with the specified offsetPath.
+   */
+  HistoryToken removePathTail(String offsetPath);
+
+  /**
    * Removes the whole path part of the {@link HistoryToken}
    *
    * @return {@link HistoryToken} without the path part.
