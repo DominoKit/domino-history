@@ -89,6 +89,20 @@ public interface DominoHistory {
   int getHistoryEntriesCount();
 
   /**
+   * Updates the URL to the specified token without firing URL change listeners. This method wraps
+   * the provided string token into a {@link StateToken} and delegates to the other overloaded
+   * `pushState` method.
+   *
+   * @param token the string representing the new state token
+   * @deprecated Use {@link #pushState(StateToken)} instead for better token management and
+   *     flexibility.
+   */
+  @Deprecated
+  default void pushState(String token) {
+    pushState(StateToken.of(token));
+  }
+
+  /**
    * Change the url to the specified token without firing url change listeners, sets the title of
    * the new page and assign the data to the new state.
    *
@@ -108,6 +122,35 @@ public interface DominoHistory {
   void pushState(StateToken stateToken, TokenParameter... parameters);
 
   /**
+   * Changes the URL to the specified token without firing URL change listeners. Sets the title of
+   * the new page and assigns the data to the new state. In case the new token has expression
+   * parameters in the form ":paramName", they will be replaced using the provided parameters.
+   *
+   * @param stateToken the string representing the new state token
+   * @param parameters a list of {@link TokenParameter} to replace expression parameters in the URL
+   *     token
+   * @deprecated Use {@link #pushState(StateToken, TokenParameter...)} instead for better token
+   *     management and flexibility.
+   */
+  @Deprecated
+  default void pushState(String stateToken, TokenParameter... parameters) {
+    pushState(StateToken.of(stateToken), parameters);
+  };
+
+  /**
+   * Fires a state change by converting the provided string token into a {@link StateToken} and then
+   * triggering the associated state change logic. This method is a shorthand for invoking the
+   * {@link #fireState(StateToken)} method with a {@link StateToken} created from the given string.
+   *
+   * @param token the string token representing the desired state to be fired
+   * @deprecated Use {@link #fireState(StateToken)} directly with a {@link StateToken}.
+   */
+  @Deprecated
+  default void fireState(String token) {
+    fireState(StateToken.of(token));
+  }
+
+  /**
    * Change the url to the specified token and fire change listeners, sets the title of the new page
    * and assign the data to the new state.
    *
@@ -125,6 +168,19 @@ public interface DominoHistory {
    *     the url token
    */
   void fireState(StateToken stateToken, TokenParameter... parameters);
+
+  /**
+   * Converts the provided string-based state token to a {@link StateToken} and triggers a state
+   * change. Expression parameters in the token in the form ":paramName" are replaced using
+   * the provided parameters. This method is a shorthand for firing a state using a string token.
+   *
+   * @param stateToken the string representation of the state to be fired
+   * @param parameters a list of {@link TokenParameter} to replace expression parameters in the state token
+   * @deprecated Use {@link #fireState(StateToken*/
+  @Deprecated
+  default void fireState(String stateToken, TokenParameter... parameters) {
+    fireState(StateToken.of(stateToken), parameters);
+  }
 
   /**
    * Replace the current url with the specified token without firing url change listeners, sets the
