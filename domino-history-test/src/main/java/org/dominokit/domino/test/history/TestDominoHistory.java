@@ -24,9 +24,9 @@ import org.dominokit.domino.history.*;
 /** A test implementation of {@link AppHistory} */
 public class TestDominoHistory implements AppHistory {
 
-  private Set<HistoryListener> listeners = new HashSet<>();
-  private Deque<HistoryState> forwards = new LinkedList<>();
-  private Deque<HistoryState> backwards = new LinkedList<>();
+  private final List<HistoryListener> listeners = new ArrayList<>();
+  private final Deque<HistoryState> forwards = new LinkedList<>();
+  private final Deque<HistoryState> backwards = new LinkedList<>();
   private String rootPath;
 
   private List<HistoryInterceptor> interceptors = new ArrayList<>();
@@ -63,7 +63,30 @@ public class TestDominoHistory implements AppHistory {
 
   @Override
   public void removeListener(StateListener listener) {
-    listeners.remove(listener);
+    for (Iterator<HistoryListener> iterator = listeners.iterator(); iterator.hasNext(); ) {
+      if (iterator.next().matches(listener)) {
+        iterator.remove();
+      }
+    }
+  }
+
+  @Override
+  public List<StateListener> getListeners() {
+    List<StateListener> registeredListeners = new ArrayList<>(listeners);
+    return Collections.unmodifiableList(registeredListeners);
+  }
+
+  @Override
+  public String toString() {
+    List<StateListener> registeredListeners = getListeners();
+    StringBuilder builder = new StringBuilder("[");
+    for (int i = 0; i < registeredListeners.size(); i++) {
+      if (i > 0) {
+        builder.append(", ");
+      }
+      builder.append(registeredListeners.get(i));
+    }
+    return builder.append("]").toString();
   }
 
   private State currentState() {
@@ -87,8 +110,10 @@ public class TestDominoHistory implements AppHistory {
               if (isNull(normalized)) {
                 normalized = new DefaultNormalizedToken(rootPath, state.token);
               }
-              return l.tokenFilter.filter(
-                  new TestState(new HistoryState(normalized.getToken().value(), "test")).token());
+              return l.getTokenFilter()
+                  .filter(
+                      new TestState(new HistoryState(normalized.getToken().value(), "test"))
+                          .token());
             })
         .forEach(
             listener -> {
@@ -97,9 +122,11 @@ public class TestDominoHistory implements AppHistory {
               }
 
               NormalizedToken normalized = getNormalizedToken(rootPath, state.token, listener);
-              listener.listener.onPopState(
-                  new TestState(
-                      normalized, new HistoryState(normalized.getToken().value(), "test")));
+              listener
+                  .getListener()
+                  .onPopState(
+                      new TestState(
+                          normalized, new HistoryState(normalized.getToken().value(), "test")));
             });
 
     listeners.removeAll(completedListeners);
@@ -114,7 +141,7 @@ public class TestDominoHistory implements AppHistory {
 
   private NormalizedToken getNormalizedToken(
       String rootPath, String token, HistoryListener listener) {
-    return listener.tokenFilter.normalizeToken(rootPath, token);
+    return listener.getTokenFilter().normalizeToken(rootPath, token);
   }
 
   @Override
@@ -228,31 +255,49 @@ public class TestDominoHistory implements AppHistory {
     return result;
   }
 
-  private class HistoryListener {
+  private class HistoryListener implements StateListener {
     private final StateListener listener;
     private final TokenFilter tokenFilter;
     private final boolean removeOnComplete;
 
-    public HistoryListener(StateListener listener, TokenFilter tokenFilter) {
-      this.listener = listener;
-      this.tokenFilter = tokenFilter;
-      this.removeOnComplete = false;
-    }
-
-    public HistoryListener(
+    private HistoryListener(
         StateListener listener, TokenFilter tokenFilter, boolean removeOnComplete) {
       this.listener = listener;
       this.tokenFilter = tokenFilter;
       this.removeOnComplete = removeOnComplete;
     }
 
+    @Override
+    public void onPopState(State state) {
+      listener.onPopState(state);
+    }
+
+    public StateListener getListener() {
+      return listener;
+    }
+
+    public TokenFilter getTokenFilter() {
+      return tokenFilter;
+    }
+
     public boolean isRemoveOnComplete() {
       return removeOnComplete;
     }
-  }
 
-  public Set<HistoryListener> getListeners() {
-    return listeners;
+    public boolean matches(StateListener other) {
+      return this == other || listener == other;
+    }
+
+    @Override
+    public String toString() {
+      return "HistoryListener{listener="
+          + listener
+          + ", tokenFilter="
+          + tokenFilter
+          + ", removeOnComplete="
+          + removeOnComplete
+          + "}";
+    }
   }
 
   public Deque<HistoryState> getForwards() {

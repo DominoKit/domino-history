@@ -25,10 +25,14 @@ import java.util.Map;
  * values to TokenA expression parameters from TokenB path2 = secondPath fragment2 = secondFragment
  */
 public interface NormalizedToken {
-  /** @return the original token being normalized */
+  /**
+   * @return the original token being normalized
+   */
   HistoryToken getToken();
 
-  /** @return the token path parameters including the parsed parameter expresssions. */
+  /**
+   * @return the token path parameters including the parsed parameter expresssions.
+   */
   Map<String, String> getPathParameters();
 
   /**
@@ -44,10 +48,14 @@ public interface NormalizedToken {
    */
   boolean containsPathParameter(String name);
 
-  /** @return <b>true</b> if token has no path parameters */
+  /**
+   * @return <b>true</b> if token has no path parameters
+   */
   boolean isEmptyPathParameters();
 
-  /** @return Key, Value of all parsed fragment parameters. */
+  /**
+   * @return Key, Value of all parsed fragment parameters.
+   */
   Map<String, String> getFragmentParameters();
 
   /**
@@ -64,6 +72,8 @@ public interface NormalizedToken {
    */
   boolean containsFragmentParameter(String name);
 
-  /** @return <b>true</b> if no fragment parameters were parsed, otherwise return <b>false</b>. */
+  /**
+   * @return <b>true</b> if no fragment parameters were parsed, otherwise return <b>false</b>.
+   */
   boolean isEmptyFragmentParameters();
 }

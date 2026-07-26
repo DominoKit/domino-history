@@ -31,7 +31,7 @@ public class StateHistory implements AppHistory {
 
   private static final Logger LOGGER = Logger.getLogger(StateHistory.class.getName());
 
-  private Set<HistoryListener> listeners = new HashSet<>();
+  private final List<HistoryListener> listeners = new ArrayList<>();
   private final History history = Js.cast(DomGlobal.self.history);
   private String rootPath;
 
@@ -225,7 +225,30 @@ public class StateHistory implements AppHistory {
    */
   @Override
   public void removeListener(StateListener listener) {
-    listeners.remove(listener);
+    for (Iterator<HistoryListener> iterator = listeners.iterator(); iterator.hasNext(); ) {
+      if (iterator.next().matches(listener)) {
+        iterator.remove();
+      }
+    }
+  }
+
+  @Override
+  public List<StateListener> getListeners() {
+    List<StateListener> registeredListeners = new ArrayList<>(listeners);
+    return Collections.unmodifiableList(registeredListeners);
+  }
+
+  @Override
+  public String toString() {
+    List<StateListener> registeredListeners = getListeners();
+    StringBuilder builder = new StringBuilder("[");
+    for (int i = 0; i < registeredListeners.size(); i++) {
+      if (i > 0) {
+        builder.append(", ");
+      }
+      builder.append(registeredListeners.get(i));
+    }
+    return builder.append("]").toString();
   }
 
   /** Go back one step simulating the browser back button */

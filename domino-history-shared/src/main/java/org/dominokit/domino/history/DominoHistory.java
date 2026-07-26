@@ -15,6 +15,7 @@
  */
 package org.dominokit.domino.history;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DominoHistory {
@@ -33,6 +34,13 @@ public interface DominoHistory {
    * @param listener {@link StateListener}
    */
   void removeListener(StateListener listener);
+
+  /**
+   * Returns a snapshot of all currently registered listeners.
+   *
+   * @return {@link List} of registered listeners
+   */
+  List<StateListener> getListeners();
 
   /**
    * Create a listener that will listen for any change that matches the criteria defined by the
@@ -135,7 +143,8 @@ public interface DominoHistory {
   @Deprecated
   default void pushState(String stateToken, TokenParameter... parameters) {
     pushState(StateToken.of(stateToken), parameters);
-  };
+  }
+  ;
 
   /**
    * Fires a state change by converting the provided string token into a {@link StateToken} and then
@@ -229,7 +238,9 @@ public interface DominoHistory {
 
   /** The url state */
   interface State {
-    /** @return String, the token root path */
+    /**
+     * @return String, the token root path
+     */
     String rootPath();
 
     /**

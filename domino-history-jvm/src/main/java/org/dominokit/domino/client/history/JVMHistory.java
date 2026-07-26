@@ -27,7 +27,7 @@ import org.dominokit.domino.history.*;
  */
 public class JVMHistory implements AppHistory {
 
-  private Set<HistoryListener> listeners = new HashSet<>();
+  private final List<HistoryListener> listeners = new ArrayList<>();
   private Deque<HistoryState> forwards = new LinkedList<>();
   private Deque<HistoryState> backwards = new LinkedList<>();
   private String rootPath;
@@ -102,7 +102,30 @@ public class JVMHistory implements AppHistory {
    */
   @Override
   public void removeListener(StateListener listener) {
-    listeners.remove(listener);
+    for (Iterator<HistoryListener> iterator = listeners.iterator(); iterator.hasNext(); ) {
+      if (iterator.next().matches(listener)) {
+        iterator.remove();
+      }
+    }
+  }
+
+  @Override
+  public List<StateListener> getListeners() {
+    List<StateListener> registeredListeners = new ArrayList<>(listeners);
+    return Collections.unmodifiableList(registeredListeners);
+  }
+
+  @Override
+  public String toString() {
+    List<StateListener> registeredListeners = getListeners();
+    StringBuilder builder = new StringBuilder("[");
+    for (int i = 0; i < registeredListeners.size(); i++) {
+      if (i > 0) {
+        builder.append(", ");
+      }
+      builder.append(registeredListeners.get(i));
+    }
+    return builder.append("]").toString();
   }
 
   private State currentState() {
@@ -127,8 +150,10 @@ public class JVMHistory implements AppHistory {
               if (isNull(normalized)) {
                 normalized = new DefaultNormalizedToken(state.token);
               }
-              return listener.tokenFilter.filter(
-                  new JVMState(new HistoryState(normalized.getToken().value(), "")).token());
+              return listener
+                  .getTokenFilter()
+                  .filter(
+                      new JVMState(new HistoryState(normalized.getToken().value(), "")).token());
             })
         .forEach(
             listener -> {
@@ -137,8 +162,11 @@ public class JVMHistory implements AppHistory {
               }
 
               NormalizedToken normalized = getNormalizedToken(rootPath, state.token, listener);
-              listener.listener.onPopState(
-                  new JVMState(normalized, new HistoryState(normalized.getToken().value(), "")));
+              listener
+                  .getListener()
+                  .onPopState(
+                      new JVMState(
+                          normalized, new HistoryState(normalized.getToken().value(), "")));
             });
 
     listeners.removeAll(completedListeners);
@@ -153,7 +181,7 @@ public class JVMHistory implements AppHistory {
 
   private NormalizedToken getNormalizedToken(
       String rootPath, String token, HistoryListener listener) {
-    return listener.tokenFilter.normalizeToken(rootPath, token);
+    return listener.getTokenFilter().normalizeToken(rootPath, token);
   }
 
   /** Go back one step simulating a back button */
@@ -319,39 +347,57 @@ public class JVMHistory implements AppHistory {
     interceptorChain.intercept(new TokenEvent(stateToken));
   }
 
-  private String replaceParameters(String token, List<TokenParameter> parametersList) {
-    String result = token;
-    for (TokenParameter parameter : parametersList) {
-      result = result.replace(":" + parameter.getName(), parameter.getValue());
-    }
-    return result;
-  }
-
-  private class HistoryListener {
+  private class HistoryListener implements StateListener {
     private final StateListener listener;
     private final TokenFilter tokenFilter;
     private final boolean removeOnComplete;
 
-    public HistoryListener(StateListener listener, TokenFilter tokenFilter) {
-      this.listener = listener;
-      this.tokenFilter = tokenFilter;
-      this.removeOnComplete = false;
-    }
-
-    public HistoryListener(
+    private HistoryListener(
         StateListener listener, TokenFilter tokenFilter, boolean removeOnComplete) {
       this.listener = listener;
       this.tokenFilter = tokenFilter;
       this.removeOnComplete = removeOnComplete;
     }
 
+    @Override
+    public void onPopState(State state) {
+      listener.onPopState(state);
+    }
+
+    public StateListener getListener() {
+      return listener;
+    }
+
+    public TokenFilter getTokenFilter() {
+      return tokenFilter;
+    }
+
     public boolean isRemoveOnComplete() {
       return removeOnComplete;
     }
+
+    public boolean matches(StateListener other) {
+      return this == other || listener == other;
+    }
+
+    @Override
+    public String toString() {
+      return "HistoryListener{listener="
+          + listener
+          + ", tokenFilter="
+          + tokenFilter
+          + ", removeOnComplete="
+          + removeOnComplete
+          + "}";
+    }
   }
 
-  public Set<HistoryListener> getListeners() {
-    return listeners;
+  private String replaceParameters(String token, List<TokenParameter> parametersList) {
+    String result = token;
+    for (TokenParameter parameter : parametersList) {
+      result = result.replace(":" + parameter.getName(), parameter.getValue());
+    }
+    return result;
   }
 
   public Deque<HistoryState> getForwards() {

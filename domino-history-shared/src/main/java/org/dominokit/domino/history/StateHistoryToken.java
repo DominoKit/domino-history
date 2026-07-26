@@ -33,7 +33,9 @@ public class StateHistoryToken implements HistoryToken {
   private List<Parameter> queryParameters = new LinkedList<>();
   private List<String> fragments = new LinkedList<>();
 
-  /** @param token String, a URL token */
+  /**
+   * @param token String, a URL token
+   */
   public StateHistoryToken(String token) {
     this("", token);
   }
@@ -189,7 +191,9 @@ public class StateHistoryToken implements HistoryToken {
     return String.join("/", paths());
   }
 
-  /** @return the string representing the whole query part of a token */
+  /**
+   * @return the string representing the whole query part of a token
+   */
   @Override
   public String query() {
     return queryParameters.stream().map(Parameter::asQueryString).collect(Collectors.joining("&"));
@@ -212,7 +216,9 @@ public class StateHistoryToken implements HistoryToken {
     }
   }
 
-  /** @return Key, value map of all query parameters of the token */
+  /**
+   * @return Key, value map of all query parameters of the token
+   */
   @Override
   public Map<String, List<String>> queryParameters() {
     Map<String, List<String>> parameters = new HashMap<>();
@@ -638,7 +644,9 @@ public class StateHistoryToken implements HistoryToken {
     return this;
   }
 
-  /** @return the string representing the whole fragment part of a token */
+  /**
+   * @return the string representing the whole fragment part of a token
+   */
   @Override
   public String fragment() {
     return String.join("/", fragments());
@@ -653,7 +661,9 @@ public class StateHistoryToken implements HistoryToken {
     return paths.isEmpty() && queryParameters.isEmpty() && fragments.isEmpty();
   }
 
-  /** @return the full string representation of a {@link HistoryToken} */
+  /**
+   * @return the full string representation of a {@link HistoryToken}
+   */
   @Override
   public String value() {
     String path = path();
@@ -726,13 +736,15 @@ public class StateHistoryToken implements HistoryToken {
 
   private List<Parameter> parsedParameters(String queryString) {
 
-    return Stream.of(queryString.split("&")).map(part -> part.split("="))
+    return Stream.of(queryString.split("&"))
+        .map(part -> part.split("="))
         .collect(
             Collectors.groupingBy(
                 keyValue -> keyValue[0],
                 LinkedHashMap::new,
                 Collectors.mapping(keyValue -> keyValue[1], Collectors.toList())))
-        .entrySet().stream()
+        .entrySet()
+        .stream()
         .map(entry -> new Parameter(entry.getKey(), entry.getValue()))
         .collect(Collectors.toCollection(LinkedList::new));
   }

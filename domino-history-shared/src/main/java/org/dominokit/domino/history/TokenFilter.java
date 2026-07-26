@@ -259,6 +259,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return new DefaultNormalizedToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.any()";
+    }
   }
 
   /**
@@ -280,6 +285,11 @@ public interface TokenFilter {
     @Override
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalize(rootPath, token, matchingToken);
+    }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.exactMatch(\"" + matchingToken + "\")";
     }
   }
 
@@ -303,6 +313,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalize(rootPath, token, prefix);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.startsWith(\"" + prefix + "\")";
+    }
   }
 
   /**
@@ -324,6 +339,11 @@ public interface TokenFilter {
     @Override
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalizeTail(rootPath, token, postfix);
+    }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.endsWith(\"" + postfix + "\")";
     }
   }
 
@@ -350,6 +370,11 @@ public interface TokenFilter {
             "Contains filter cannot normalize token, please remove all variable from filter!");
       }
       return new DefaultNormalizedToken(rootPath, token);
+    }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.contains(\"" + matchingPart + "\")";
     }
   }
 
@@ -381,6 +406,11 @@ public interface TokenFilter {
       }
       return new DefaultNormalizedToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.containsFragment(\"" + matchingPart + "\")";
+    }
   }
 
   /**
@@ -406,6 +436,11 @@ public interface TokenFilter {
     @Override
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalizeFragments(rootPath, token, matchingPart);
+    }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.exactFragmentMatch(\"" + matchingPart + "\")";
     }
   }
 
@@ -433,6 +468,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalizeFragments(rootPath, token, prefix);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.startsWithFragment(\"" + prefix + "\")";
+    }
   }
 
   /**
@@ -459,6 +499,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalizeFragmentsTail(rootPath, token, postfix);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.endsWithFragment(\"" + postfix + "\")";
+    }
   }
 
   /**
@@ -475,6 +520,11 @@ public interface TokenFilter {
     @Override
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return new DefaultNormalizedToken(rootPath, token);
+    }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.anyFragment()";
     }
   }
 
@@ -502,6 +552,11 @@ public interface TokenFilter {
       }
       return new DefaultNormalizedToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.hasPathFilter(\"" + path + "\")";
+    }
   }
 
   /**
@@ -528,6 +583,18 @@ public interface TokenFilter {
       }
       return new DefaultNormalizedToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder("TokenFilter.hasPathsFilter(");
+      for (int i = 0; i < path.length; i++) {
+        if (i > 0) {
+          builder.append(", ");
+        }
+        builder.append("\"").append(path[i]).append("\"");
+      }
+      return builder.append(")").toString();
+    }
   }
 
   /**
@@ -549,6 +616,11 @@ public interface TokenFilter {
     @Override
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalizePaths(rootPath, token, path);
+    }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.exactPathFilter(\"" + path + "\")";
     }
   }
 
@@ -572,6 +644,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalizePaths(rootPath, token, path);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.startsWithPathFilter(\"" + path + "\")";
+    }
   }
 
   /**
@@ -594,6 +671,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return TokenNormalizer.normalizePathTail(rootPath, token, path);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.endsWithPathFilter(\"" + path + "\")";
+    }
   }
 
   /**
@@ -613,6 +695,11 @@ public interface TokenFilter {
       }
       return new DefaultNormalizedToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.anyPathFilter()";
+    }
   }
 
   /** A token filter that will return <b>true</b> only if the history token is empty. */
@@ -626,6 +713,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return new DefaultNormalizedToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.isEmpty()";
+    }
   }
 
   /**
@@ -634,8 +726,8 @@ public interface TokenFilter {
    */
   class QueryFilter implements TokenFilter {
 
-    private String queryParam;
-    private String value;
+    private final String queryParam;
+    private final String value;
 
     public QueryFilter(String queryParam, String value) {
       this.queryParam = queryParam;
@@ -651,6 +743,11 @@ public interface TokenFilter {
     @Override
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return new DefaultNormalizedToken(rootPath, token);
+    }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.queryParam(\"" + queryParam + "\", \"" + value + "\")";
     }
   }
 
@@ -676,6 +773,11 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return tokenFilter.normalizeToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      return "TokenFilter.not(" + tokenFilter + ")";
+    }
   }
 
   /** A token filter that return <b>true</b> only if all composed TokenFilters return true */
@@ -700,6 +802,18 @@ public interface TokenFilter {
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return new DefaultNormalizedToken(rootPath, token);
     }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder("TokenFilter.and(");
+      for (int i = 0; i < tokenFilters.length; i++) {
+        if (i > 0) {
+          builder.append(", ");
+        }
+        builder.append(tokenFilters[i]);
+      }
+      return builder.append(")").toString();
+    }
   }
 
   /** A token filter that return <b>true</b> if any of the composed TokenFilters return true */
@@ -723,6 +837,18 @@ public interface TokenFilter {
     @Override
     public NormalizedToken normalizeToken(String rootPath, String token) {
       return new DefaultNormalizedToken(rootPath, token);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder("TokenFilter.or(");
+      for (int i = 0; i < tokenFilters.length; i++) {
+        if (i > 0) {
+          builder.append(", ");
+        }
+        builder.append(tokenFilters[i]);
+      }
+      return builder.append(")").toString();
     }
   }
 }
