@@ -202,6 +202,7 @@ public class TokenNormalizer {
   public static NormalizedToken normalizeTail(String original, String target) {
     return normalizeTail("", original, target);
   }
+
   /**
    * Normalize the tail of the specified tokens
    *
@@ -242,6 +243,7 @@ public class TokenNormalizer {
   public static NormalizedToken normalizeFragmentsTail(String original, String target) {
     return normalizeFragmentsTail("", original, target);
   }
+
   /**
    * Normalize the tail of the specified tokens fragment parts
    *
@@ -310,6 +312,7 @@ public class TokenNormalizer {
   public static DefaultNormalizedToken normalizePaths(String original, String target) {
     return normalizePaths("", original, target);
   }
+
   /**
    * Normalize the tail of the specified tokens paths
    *

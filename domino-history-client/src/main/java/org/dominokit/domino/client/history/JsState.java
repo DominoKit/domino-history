@@ -27,8 +27,10 @@ import org.dominokit.domino.history.EffectiveToken;
 public class JsState {
   /** The url in the browser */
   public String historyToken;
+
   /** Data String assigned to the current browser state, on refresh or reload this is always null */
   public String data;
+
   /** The title of the current page */
   public String title;
 

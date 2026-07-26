@@ -7,12 +7,29 @@
 ![GWT3/J2CL compatible](https://img.shields.io/badge/GWT3/J2CL-compatible-brightgreen.svg)
 
 # domino-history
-A wrapper for browser history state API
+A History API wrapper for browser (GWT) apps with a JVM in-memory implementation for
+examples, tests, or desktop applications. It provides a consistent token model, filtering,
+normalization (wildcards), and an interceptor chain for navigation guards.
 
-### Maven dependencies 
+## What it provides
+- Browser implementation built on the History API: `StateHistory`
+- JVM implementation for tests or non-browser apps: `JVMHistory`
+- Shared token model: paths, query parameters, fragments
+- Token filters with wildcards and normalization
+- Interceptors to block or modify navigation
+- Direct URL handling on reload (useful for deep links)
 
-- **Release**
+## Modules
+- `domino-history-shared`: shared token model and filters
+- `domino-history-client`: browser GWT implementation
+- `domino-history-jvm`: JVM in-memory implementation
+- `domino-history-test`: test helpers and tests
 
+## Installation
+### Maven dependencies
+Use the latest release from Maven Central (example shown).
+
+- Browser / GWT
 ```xml
 <dependency>
   <groupId>org.dominokit</groupId>
@@ -21,8 +38,16 @@ A wrapper for browser history state API
 </dependency>
 ```
 
-- **Development snapshot**
+- JVM / tests
+```xml
+<dependency>
+  <groupId>org.dominokit</groupId>
+  <artifactId>domino-history-jvm</artifactId>
+  <version>1.0.0-RC3</version>
+</dependency>
+```
 
+- Development snapshot
 ```xml
 <dependency>
   <groupId>org.dominokit</groupId>
@@ -30,167 +55,133 @@ A wrapper for browser history state API
   <version>HEAD-SNAPSHOT</version>
 </dependency>
 ```
+
 ### GWT inherits
+Use the client module for browser applications:
 
 `<inherits name="org.dominokit.domino.client.history.History"/>`
 
-### Usage
+If you only need the shared token utilities:
 
-1- Create a `StateHistory` instance.
+`<inherits name="org.dominokit.domino.history.History"/>`
 
-`StateHistory history = new StateHistory()`
-
-2- Use `pushState(String token)` to change the window url without firing the events.
-
-3- Use `fireState(String token)` to change the window url and fire the events.
-
-4- Use `listen` with all its variants to start listing for url changes.
-
-5- Use `currentToken` to get the current active token in the browser window url.
-
-#### Sample
-
+## Quick start (browser)
 ```java
 public class App implements EntryPoint {
 
-    private StateHistory history = new StateHistory();
+  private final StateHistory history = new StateHistory();
 
-    public void onModuleLoad() {
+  @Override
+  public void onModuleLoad() {
+    history.listen(TokenFilter.startsWith("users/:userId"), state -> {
+      String userId = state.normalizedToken().getPathParameter("userId");
+      console.info("User: " + userId);
+    });
 
-        history.listen(TokenFilter.any(), state -> {
-            console.info(state.token().value());
-        });
-        history.listen(TokenFilter.startsWithPathFilter("path1"), state -> {
-            console.info(state.token().value());
-        });
-
-        HTMLButtonElement button1 = Js.uncheckedCast(document.createElement("button"));
-        button1.textContent ="button1";
-        button1.addEventListener("click", evt -> history.pushState("path1/path2"));
-
-        HTMLButtonElement button2 = Js.uncheckedCast(document.createElement("button"));
-        button2.textContent ="button2";
-        button2.addEventListener("click", evt -> history.fireState("path3/path4"));
-
-        HTMLButtonElement button3 = Js.uncheckedCast(document.createElement("button"));
-        button3.textContent ="button3";
-        button3.addEventListener("click", evt -> console.info("current token : "+history.currentToken().value()));
-
-        document.body.appendChild(button1);
-        document.body.appendChild(button2);
-        document.body.appendChild(button3);
-
-    }
+    history.fireState(
+        StateToken.of("users/:userId")
+            .title("User profile")
+            .data("{\"from\":\"profile\"}"),
+        TokenParameter.of("userId", "42"),
+        TokenParameter.query("tab", "activity"));
+  }
 }
 ```
 
-### The HistoryToken
+## Quick start (JVM)
+```java
+JVMHistory history = new JVMHistory();
+history.listen(TokenFilter.any(), state -> {
+  System.out.println(state.token().value());
+});
 
-to get the current url token use `history().currentToken()`, every time this method is called it will return a new `HistoryToken` instance. once a token is obtained we can use it to manipulate the token instance, use one of the following methods to make changes to the token or ask for information from the token : 
+history.fireState(StateToken.of("dashboard"));
+history.back();
+```
 
-* **`boolean startsWithPath(String path)`** : returns true if the token starts with the path.
-* **`boolean endsWithPath(String path)`** : returns true if the paths part ends with the path.
-* **`boolean containsPath(String path)`** : returns true if the paths contains the path.
-* **`List<String> paths()`** : returns a list of all paths in the token.
-* **`String path()`** : returns the paths part of the token as a String.
-* **`HistoryToken appendPath(String path)`** : add a new path at the end the token path.
-* **`HistoryToken replacePath(String path, String replacement)`** : replace a specific path with a new one.
-* **`HistoryToken replaceAllPaths(String newPath)`** : replace all paths with a new path.
-* **`HistoryToken removePath(String path)`** : removes a specific path from the token.
-* **`HistoryToken removeLastPath(String path)`** : removes the last path part from the token.
-* **`HistoryToken replaceLastPath(String replacement)`** : replace the last path in token with a new path.
-* **`HistoryToken clearPaths()`** : remove all paths from the token.
-* **`boolean fragmentsStartsWith(String fragment)`** : return true if the part after the `#` starts with the fragment.
-* **`boolean endsWithFragment(String fragment)`** : return true if the part after the `#` ends with the fragment.
-* **`boolean containsFragment(String fragment)`** : return true if the part after the `#` contains the fragment.
-* **`List<String> fragments()`** : return a list of fragments.
-* **`HistoryToken replaceLastFragment(String replacement)`** : replace the last fragment with a new one.
-* **`HistoryToken removeFragment(String fragment)`** : remove a specific fragment.
-* **`HistoryToken appendFragment(String fragment)`** : append a fragment at the end of the fragments
-* **`HistoryToken clearFragments()`** : clear all fragments.
-* **`HistoryToken replaceFragment(String fragment, String replacement)`** : replace a fragment with a new one.
-* **`HistoryToken replaceAllFragments(String newFragment)`** : replace all fragments with a new one.
-* **`String fragment()`** : return the fragments as a String.
-* **`Map<String, String> queryParameters()`** : returns a map of all query parameters.
-* **`boolean hasQueryParameter(String name)`** : returns true if there is a query name with the specified name.
-* **`String getQueryParameter(String name)`** : return the value of the specified query parametr.
-* **`HistoryToken appendParameter(String name, String value)`** : add a new query parameter.
-* **`HistoryToken replaceParameter(String name, String replacementName, String replacementValue)`** : replace a query parameter with a new one.
-* **`HistoryToken removeParameter(String name)`** : removes a query parameter.
-* **`HistoryToken replaceQuery(String newQuery)`** : replace all query part with a new one.
-* **`HistoryToken clearQuery()`** : remove all query parameters.
-* **`String query()`** : return the query parameters as a String.
-* **`boolean isEmpty()`** : returns true if the token is empty.
-* **`HistoryToken clear()`** : remove all paths, query parameters and fragments and makes the token empty.
-* **`String value()`** : return the token as a String.
+## Core concepts
+### StateToken
+Use `StateToken` to include a token string, optional title, and optional data payload.
+`StateHistory` applies it to the browser URL; `JVMHistory` stores it in memory.
 
-### Token Filters
+### HistoryToken
+`HistoryToken` is a parsed view of the URL token with helpers to:
+- Read/modify paths, query parameters, and fragments
+- Check prefixes/suffixes/contains
+- Serialize back to string via `value()` or `noRootValue()`
 
-Use one of the filters from `TokenFilter` to narrow the tokens you want to listen to from history, the TokenFilter class has factory method for lots of useful filters.
+### TokenFilter
+Use filters to target specific tokens. Examples:
+- `TokenFilter.startsWith("orders/:orderId")`
+- `TokenFilter.exactMatch("dashboard")`
+- `TokenFilter.and(TokenFilter.startsWith("users"), TokenFilter.queryParam("active", "true"))`
 
-- Sample
+### NormalizedToken (wildcards)
+When a filter contains variables (ex: `:userId`), the matched values are available through
+`state.normalizedToken().getPathParameter("userId")`.
+
+## Token format
+Tokens are treated as:
+- Paths: `a/b/c`
+- Query: `?sort=asc&tag=domino`
+- Fragments: `#details/section`
+
+Example token: `users/42?tab=profile#details/intro`
+
+## Navigation APIs
+- `pushState(StateToken)` updates the URL without notifying listeners.
+- `fireState(StateToken)` updates the URL and fires matching listeners.
+- `replaceState(StateToken)` replaces the current entry.
+- `currentToken()` parses the current URL into a `HistoryToken`.
+- `back()` / `forward()` walk the history stack.
+
+## Direct URL handling
+When the application loads with a URL (deep-link), invoke your listener directly:
 
 ```java
 history.listen(TokenFilter.any(), state -> {
-    console.info(state.token().value());
-});
-history.listen(TokenFilter.startsWithPathFilter("path1"), state -> {
-    console.info(state.token().value());
-});
+  console.info("Direct? " + state.isDirect());
+}).onDirectUrl();
 ```
-#### Built-in token filters
 
-* **`exactMatch(String matchingToken)`**
-
-* **`startsWith(String prefix)`**
-
-* **`endsWith(String postfix)`**
-
-* **`contains(String part)`**
-
-* **`any()`**
-
-* **`exactFragmentMatch(String matchingToken)`**
-
-* **`startsWithFragment(String prefix)`**
-
-* **`endsWithFragment(String postfix)`**
-
-* **`containsFragment(String part)`**
-
-* **`anyFragment()`**
-
-* **`hasPathFilter(String path)`**
-
-* **`hasPathsFilter(String... paths)`**
-
-* **`exactPathFilter(String path)`**
-
-* **`startsWithPathFilter(String path)`**
-
-* **`endsWithPathFilter(String path)`**
-
-* **`anyPathFilter()`**
-
-* **`isEmpty()`**
-
-### Wildcards
-
-Sometimes we want to listen to token where a specific part of it is a variable, in this case we can simply define that part as a variable using `:` in the token filter when we define a listener.
-
-- Sample
+## Interceptors (navigation guards)
+Interceptors can cancel or allow navigation before it is applied.
 
 ```java
-HTMLButtonElement button4 = Js.uncheckedCast(document.createElement("button"));
-button4.textContent ="button4";
-button4.addEventListener("click", evt -> history.fireState("fixedPath/somePath"));
+history.addInterceptor(
+    (event, chain) -> {
+      if (!allowNavigation(event.getParsedToken())) {
+        event.cancel();
+        return;
+      }
+      chain.next();
+    });
+```
 
-history.listen(TokenFilter.endsWith("fixedPath/:variablePath"), state -> {
-    String variablePathValue = state.normalizedToken().getPathParameter("variablePath");
-    console.info(variablePathValue);
-    //when the button clicked should print somePath
-});
-``` 
+## Root paths
+You can scope a history instance to a root path:
 
+```java
+StateHistory history = new StateHistory("app");
+// Tokens must start with "app" to match listeners.
+```
 
+## Token utilities and mutation
+`HistoryToken` supports:
+- Path operations: append/replace/remove segments
+- Query operations: add/replace/remove parameters (multi-value supported)
+- Fragment operations: add/replace/remove fragment segments
 
+## Token filters (built-in)
+`TokenFilter` includes:
+- `exactMatch`, `startsWith`, `endsWith`, `contains`, `any`
+- Fragment variants: `exactFragmentMatch`, `startsWithFragment`, `endsWithFragment`, `containsFragment`, `anyFragment`
+- Path variants: `hasPathFilter`, `hasPathsFilter`, `exactPathFilter`, `startsWithPathFilter`, `endsWithPathFilter`, `anyPathFilter`
+- `queryParam`, `isEmpty`, `not`, `and`, `or`
+
+## JVM history notes
+`JVMHistory` keeps a virtual history stack (`back`/`forward`) and is ideal for tests.
+
+## Build and test
+- `mvn test`
+- `mvn -pl domino-history-shared -am test` (targeted module build)

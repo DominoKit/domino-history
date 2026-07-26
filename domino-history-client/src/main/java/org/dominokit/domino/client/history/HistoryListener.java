@@ -22,24 +22,22 @@ import org.dominokit.domino.history.TokenFilter;
  * This class is used by internal API to create listeners for url changes through static factory
  * methods, the class only expose getters for internal memebers.
  */
-public class HistoryListener {
+public class HistoryListener implements DominoHistory.StateListener {
+
   private final DominoHistory.StateListener listener;
-
   private final TokenFilter tokenFilter;
-
   private final boolean removeOnComplete;
-
-  private HistoryListener(DominoHistory.StateListener listener, TokenFilter tokenFilter) {
-    this.listener = listener;
-    this.tokenFilter = tokenFilter;
-    this.removeOnComplete = false;
-  }
 
   HistoryListener(
       DominoHistory.StateListener listener, TokenFilter tokenFilter, boolean removeOnComplete) {
     this.listener = listener;
     this.tokenFilter = tokenFilter;
     this.removeOnComplete = removeOnComplete;
+  }
+
+  @Override
+  public void onPopState(DominoHistory.State state) {
+    listener.onPopState(state);
   }
 
   /**
@@ -69,5 +67,20 @@ public class HistoryListener {
    */
   public boolean isRemoveOnComplete() {
     return removeOnComplete;
+  }
+
+  public boolean matches(DominoHistory.StateListener other) {
+    return this == other || listener == other;
+  }
+
+  @Override
+  public String toString() {
+    return "HistoryListener{listener="
+        + listener
+        + ", tokenFilter="
+        + tokenFilter
+        + ", removeOnComplete="
+        + removeOnComplete
+        + "}";
   }
 }

@@ -186,7 +186,9 @@ public interface HistoryToken {
    */
   HistoryToken removePath(String path);
 
-  /** @return Key, value map of all query parameters of the token */
+  /**
+   * @return Key, value map of all query parameters of the token
+   */
   Map<String, List<String>> queryParameters();
 
   /**
@@ -342,10 +344,14 @@ public interface HistoryToken {
    */
   HistoryToken clearQuery();
 
-  /** @return the string representing the whole query part of a token */
+  /**
+   * @return the string representing the whole query part of a token
+   */
   String query();
 
-  /** @return the string representing the whole fragment part of a token */
+  /**
+   * @return the string representing the whole fragment part of a token
+   */
   String fragment();
 
   /**
@@ -369,10 +375,14 @@ public interface HistoryToken {
    */
   HistoryToken clear();
 
-  /** @return the full string representation of a {@link HistoryToken} */
+  /**
+   * @return the full string representation of a {@link HistoryToken}
+   */
   String value();
 
-  /** @return the full string representation of a {@link HistoryToken} without its rootPath */
+  /**
+   * @return the full string representation of a {@link HistoryToken} without its rootPath
+   */
   String noRootValue();
 
   /**
@@ -381,7 +391,9 @@ public interface HistoryToken {
    */
   boolean hasVariables();
 
-  /** @return String, the rootPath of this token if set otherwise return empty String */
+  /**
+   * @return String, the rootPath of this token if set otherwise return empty String
+   */
   String getRootPath();
 
   class TokenCannotBeNullException extends RuntimeException {}
